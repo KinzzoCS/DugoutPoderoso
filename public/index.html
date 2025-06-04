@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Iniciar Chat en Vivo</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Dugout Poderoso</title>
+<style>
+  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display:flex; height: 100vh; align-items: center; justify-content: center; flex-direction: column; }
+  button { margin: 10px; padding: 1em 2em; font-size: 1.2em; cursor: pointer; border-radius: 8px; border:none; background: #007ACC; color: white; transition: background 0.3s; }
+  button:hover { background: #005fa3; }
+</style>
 </head>
 <body>
-  <h1>🎥 Inicia el seguimiento del chat en vivo</h1>
-  <form action="/start" method="POST">
-    <input type="text" name="url" placeholder="URL del directo de YouTube" required style="width: 400px;">
-    <button type="submit">Iniciar</button>
-  </form>
+  <h1>Dugout Poderoso</h1>
+  <button onclick="location.href='/centro-mensajes'">Ir al Centro de Mensajes</button>
+  <button onclick="alert('Dugout poderoso aún en construcción...')">Dugout Poderoso</button>
 </body>
 </html>

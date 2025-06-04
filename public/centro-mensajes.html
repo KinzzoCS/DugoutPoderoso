@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Centro de Mensajes</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 1em; }
+  .mensaje { padding: 0.5em; border-bottom: 1px solid #ccc; display: flex; align-items: center; }
+  .contenido { flex-grow: 1; }
+</style>
+</head>
+<body>
+  <h2>Centro de Mensajes</h2>
+  <div>
+    <input id="urlInput" type="text" placeholder="Pega la URL del directo de YouTube aquí" style="width: 80%;" />
+    <button onclick="iniciarChat()">Iniciar Chat</button>
+  </div>
+  <div id="mensajes"></div>
+
+<script>
+  let mensajesLeidos = new Set();
+
+  async function iniciarChat() {
+    const url = document.getElementById('urlInput').value;
+    if (!url) return alert('Pega la URL del directo primero');
+    const res = await fetch('/api/iniciar-chat', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ url })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      mensajesLeidos = new Set();
+      cargarMensajes();
+    } else {
+      alert(data.error);
+    }
+  }
+
+  async function cargarMensajes() {
+    const res = await fetch('/api/mensajes');
+    if (!res.ok) return;
+    const data = await res.json();
+
+    // Actualizar estado de mensajes leídos
+    mensajesLeidos = new Set(data.mensajesLeidos);
+
+    const cont = document.getElementById('mensajes');
+    cont.innerHTML = '';
+
+    data.mensajes.forEach(msg => {
+      const div = document.createElement('div');
+      div.className = 'mensaje';
+
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.checked = mensajesLeidos.has(msg.id);
+      checkbox.addEventListener('change', () => marcarLeido(msg.id, checkbox.checked));
+
+      const contenido = document.createElement('div');
+      contenido.className = 'contenido';
+      contenido.textContent = `[${new Date(msg.publishedAt).toLocaleTimeString()}] ${msg.author}: ${msg.message}`;
+
+      div.appendChild(checkbox);
+      div.appendChild(contenido);
+      cont.appendChild(div);
+    });
+
+    // Actualiza cada 15 segundos
+    setTimeout(cargarMensajes, 15000);
+  }
+
+  async function marcarLeido(messageId, leido) {
+    await fetch('/api/marcar-leido', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ messageId, leido })
+    });
+  }
+</script>
+</body>
+</html>

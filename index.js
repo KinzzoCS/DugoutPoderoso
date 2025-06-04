@@ -1,5 +1,3 @@
-require('dotenv').config(); // Carga variables de entorno
-
 const express = require('express');
 const path = require('path');
 const {
@@ -9,57 +7,66 @@ const {
 } = require('./utils/youtube');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
 
-app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
-app.use(express.static('public'));
 
-let messages = [];
+// Datos en memoria para los mensajes y el estado del checkbox
+let mensajes = [];
+let mensajesLeidos = new Set();
+
+let liveChatId = '';
 let nextPageToken = '';
-let fetching = false;
 
+// Ruta raíz con dos botones
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/index.html'));
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.post('/start', async (req, res) => {
-  const url = req.body.url;
+// Centro de mensajes con checkbox
+app.get('/centro-mensajes', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'centro-mensajes.html'));
+});
+
+// API para iniciar chat (recibe URL del directo)
+app.post('/api/iniciar-chat', async (req, res) => {
+  const { url } = req.body;
   const videoId = extractVideoId(url);
+  if (!videoId) return res.status(400).json({ error: 'ID de video inválido' });
 
-  if (!videoId) return res.send("❌ No se pudo extraer el ID del video.");
+  liveChatId = await getLiveChatId(videoId);
+  if (!liveChatId) return res.status(404).json({ error: 'No se encontró chat en vivo' });
 
-  const liveChatId = await getLiveChatId(videoId);
-  if (!liveChatId) return res.send("❌ No se encontró chat en vivo.");
-
-  messages = [];
+  mensajes = [];
+  mensajesLeidos.clear();
   nextPageToken = '';
-  fetching = true;
-
-  const fetchMessages = async () => {
-    if (!fetching) return;
-
-    const data = await getLiveChatMessages(liveChatId, nextPageToken);
-    if (data) {
-      data.messages.forEach(msg => {
-        messages.push(`[${msg.publishedAt}] ${msg.author}: ${msg.message}`);
-      });
-      nextPageToken = data.nextPageToken;
-    } else {
-      fetching = false;
-    }
-  };
-
-  await fetchMessages(); // Primera tanda
-  setInterval(fetchMessages, 20000); // Luego cada 20s
-
-  res.redirect('/chat.html');
+  res.json({ message: 'Chat iniciado' });
 });
 
-app.get('/messages', (req, res) => {
-  res.json({ messages });
+// API para obtener mensajes nuevos
+app.get('/api/mensajes', async (req, res) => {
+  if (!liveChatId) return res.status(400).json({ error: 'Chat no iniciado' });
+  const data = await getLiveChatMessages(liveChatId, nextPageToken);
+  if (!data) return res.status(500).json({ error: 'Error al obtener mensajes' });
+
+  // Guardamos mensajes y nextPageToken
+  nextPageToken = data.nextPageToken;
+  // Añadimos solo los nuevos
+  mensajes.push(...data.messages);
+
+  res.json({ mensajes, mensajesLeidos: Array.from(mensajesLeidos) });
 });
 
-app.listen(port, () => {
-  console.log(`🌍 Servidor en http://localhost:${port}`);
+// API para marcar mensaje como leído
+app.post('/api/marcar-leido', (req, res) => {
+  const { messageId, leido } = req.body;
+  if (leido) mensajesLeidos.add(messageId);
+  else mensajesLeidos.delete(messageId);
+
+  res.json({ success: true });
+});
+
+app.listen(PORT, () => {
+  console.log(`Servidor escuchando en puerto ${PORT}`);
 });
