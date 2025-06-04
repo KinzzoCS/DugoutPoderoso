@@ -186,7 +186,7 @@
       }
 
       const msg = mensajesPoderosos[mensajeIndex];
-      div.innerHTML = `<strong>${msg.author}</strong>: ${resaltarHashtags(msg.message)}`;
+      div.innerHTML = `<strong>${msg.author}</strong><br> ${resaltarHashtags(msg.message)}`;
       mensajeIndex = (mensajeIndex + 1) % mensajesPoderosos.length;
     }
 
@@ -203,18 +203,18 @@
           .then(r => r.json())
           .then(data => console.log('🔄 Backend actualizado con nuevos mensajes:', data.mensajes))
           .catch(err => console.error('❌ Error actualizando mensajes desde YouTube:', err));
-      }, 20000);
+      }, 25000);
 
       // Obtener mensajes filtrados del backend
       obtenerMensajes();
       setInterval(() => {
         obtenerMensajes();
-      }, 10000);
+      }, 15000);
 
       // Mostrar comentarios en pantalla
       setInterval(() => {
         mostrarComentario();
-      }, 5000);
+      }, 8000);
     }
   </script>
 </body>
