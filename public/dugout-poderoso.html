@@ -104,84 +104,95 @@
   </div>
 
   <script>
-    let mensajesPoderosos = [];
-    let mensajeIndex = 0;
+  let mensajesPoderosos = [];
+  let mensajeIndex = 0;
 
-    console.log('🔥 Script cargado correctamente');
+  console.log('🔥 Script cargado correctamente');
 
-    async function iniciarChat() {
-      const url = document.getElementById('urlInput').value;
-      console.log('➡️ URL ingresada:', url);
+  async function iniciarChat() {
+    const url = document.getElementById('urlInput').value;
+    console.log('➡️ URL ingresada:', url);
 
-      if (!url) {
-        console.warn('⚠️ No se ingresó URL');
-        return alert('Debes ingresar una URL');
-      }
-
-      try {
-        const res = await fetch('/api/iniciar', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url })
-        });
-
-        const data = await res.json();
-        console.log('📨 Respuesta de /api/iniciar:', data);
-
-        if (!res.ok) throw new Error(data.error || 'Error al iniciar el chat');
-
-        document.getElementById('formulario').style.display = 'none';
-        comenzarActualizacion();
-      } catch (error) {
-        console.error("❌ Error al iniciar el chat:", error);
-        alert(error.message || 'Hubo un problema al iniciar el chat.');
-      }
+    if (!url) {
+      console.warn('⚠️ No se ingresó URL');
+      return alert('Debes ingresar una URL');
     }
 
-    async function obtenerMensajes() {
-      try {
-        const res = await fetch('/api/mensajes-poderosos');
-        const data = await res.json();
-        console.log('📥 Comentarios poderosos recibidos:', data.mensajes);
+    try {
+      const res = await fetch('/api/iniciar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      });
 
-        if (Array.isArray(data.mensajes) && data.mensajes.length > 0) {
-          mensajesPoderosos = data.mensajes;
-        }
-      } catch (error) {
-        console.error('❌ Error al obtener mensajes:', error);
+      const data = await res.json();
+      console.log('📨 Respuesta de /api/iniciar:', data);
+
+      if (!res.ok) throw new Error(data.error || 'Error al iniciar el chat');
+
+      document.getElementById('formulario').style.display = 'none';
+      comenzarActualizacion();
+    } catch (error) {
+      console.error("❌ Error al iniciar el chat:", error);
+      alert(error.message || 'Hubo un problema al iniciar el chat.');
+    }
+  }
+
+  async function obtenerMensajes() {
+    try {
+      const res = await fetch('/api/mensajes-poderosos');
+      const data = await res.json();
+      console.log('📥 Comentarios poderosos recibidos:', data.mensajes);
+
+      if (Array.isArray(data.mensajes) && data.mensajes.length > 0) {
+        mensajesPoderosos = data.mensajes;
       }
+    } catch (error) {
+      console.error('❌ Error al obtener mensajes:', error);
+    }
+  }
+
+  function mostrarComentario() {
+    const div = document.getElementById('comentario');
+
+    if (mensajesPoderosos.length === 0) {
+      div.innerHTML = '🔥 Comenta <span class="rojo">#Mineros</span> o <span class="rojo">#LaPoderosa</span> para aparecer aquí.';
+      return;
     }
 
-    function mostrarComentario() {
-      const div = document.getElementById('comentario');
+    const msg = mensajesPoderosos[mensajeIndex];
+    div.innerHTML = resaltarHashtags(msg.message);
 
-      if (mensajesPoderosos.length === 0) {
-        div.innerHTML = '🔥 Comenta <span class="rojo">#Mineros</span> o <span class="rojo">#LaPoderosa</span> para aparecer aquí.';
-        return;
-      }
+    mensajeIndex = (mensajeIndex + 1) % mensajesPoderosos.length;
+  }
 
-      const msg = mensajesPoderosos[mensajeIndex];
-      div.innerHTML = resaltarHashtags(msg.message);
+  function resaltarHashtags(texto) {
+    return texto
+      .replace(/#Mineros/gi, '<span class="rojo">#Mineros</span>')
+      .replace(/#LaPoderosa/gi, '<span class="rojo">#LaPoderosa</span>');
+  }
 
-      mensajeIndex = (mensajeIndex + 1) % mensajesPoderosos.length;
-    }
+  function comenzarActualizacion() {
+    // 1. Actualizar mensajes del backend desde YouTube cada 20 segundos
+    setInterval(() => {
+      fetch('/api/mensajes')
+        .then(r => r.json())
+        .then(data => console.log('🔄 Backend actualizado con nuevos mensajes:', data.mensajes))
+        .catch(err => console.error('❌ Error actualizando mensajes desde YouTube:', err));
+    }, 20000);
 
-    function resaltarHashtags(texto) {
-      return texto
-        .replace(/#Mineros/gi, '<span class="rojo">#Mineros</span>')
-        .replace(/#LaPoderosa/gi, '<span class="rojo">#LaPoderosa</span>');
-    }
-
-    function comenzarActualizacion() {
+    // 2. Obtener mensajes filtrados para mostrar
+    obtenerMensajes();
+    setInterval(() => {
       obtenerMensajes();
-      setInterval(() => {
-        obtenerMensajes();
-      }, 10000); // Actualiza mensajes cada 10 segundos
+    }, 10000);
 
-      setInterval(() => {
-        mostrarComentario();
-      }, 5000); // Cambia comentario cada 5 segundos
-    }
-  </script>
+    // 3. Mostrar mensajes uno a uno
+    setInterval(() => {
+      mostrarComentario();
+    }, 5000);
+  }
+</script>
+
 </body>
 </html>

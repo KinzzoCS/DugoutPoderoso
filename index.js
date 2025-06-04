@@ -8,7 +8,6 @@ const {
 } = require('./utils/youtube');
 
 const app = express();
-
 const PORT = process.env.PORT || 3000;
 
 let liveChatId = null;
@@ -48,7 +47,7 @@ app.post('/api/iniciar', async (req, res) => {
   res.json({ message: 'Chat iniciado correctamente.' });
 });
 
-// Obtener mensajes actualizados
+// Ruta para actualizar mensajes desde YouTube
 app.get('/api/mensajes', async (req, res) => {
   if (!liveChatId) return res.status(400).json({ error: 'Chat no iniciado' });
 
@@ -57,14 +56,14 @@ app.get('/api/mensajes', async (req, res) => {
     if (!data) return res.status(500).json({ error: 'Error al obtener mensajes' });
 
     nextPageToken = data.nextPageToken;
-    mensajes = data.messages; // simplemente reemplazamos mensajes para que siempre traiga los nuevos
+    mensajes = data.messages; // simplemente reemplazamos mensajes con los nuevos
 
     res.json({ mensajes });
   } catch (err) {
+    console.error('❌ Error en /api/mensajes:', err);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
-
 
 // Marcar mensajes como leídos o no
 app.post('/api/marcar-leido', (req, res) => {
@@ -77,13 +76,12 @@ app.post('/api/marcar-leido', (req, res) => {
   res.json({ success: true });
 });
 
-// Palabras prohibidas o no deseadas
+// Palabras prohibidas
 const palabrasProhibidas = [
   'albures', 'formula59', 'MinerosTV', 'odio',
   'pendejo', 'idiota', 'estúpido', 'mierda', 'puta', 'joto', 'marica', 'culero'
 ];
 
-// Función de filtro
 function esMensajeValido(msg) {
   const texto = msg.message.toLowerCase();
   const contieneHashtag = texto.includes('#mineros') || texto.includes('#lapoderosa');
@@ -91,14 +89,13 @@ function esMensajeValido(msg) {
   return contieneHashtag && !contieneProhibidas;
 }
 
-// Ruta del modo Dugout Poderoso
+// Devuelve mensajes filtrados para la pantalla
 app.get('/api/mensajes-poderosos', (req, res) => {
   if (!mensajes.length) return res.json({ mensajes: [] });
   const mensajesFiltrados = mensajes.filter(esMensajeValido);
   res.json({ mensajes: mensajesFiltrados });
 });
 
-
 app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  console.log(`🔥 Servidor corriendo en http://localhost:${PORT}`);
 });
