@@ -13,7 +13,7 @@
     <div class="mb-3">
       <label for="urlInput" class="form-label">URL del directo de YouTube</label>
       <input type="text" class="form-control" id="urlInput" placeholder="Pega aquí la URL del directo">
-      <button class="btn btn-primary mt-2" onclick="iniciarChat()">Iniciar</button>
+      <button class="btn btn-primary mt-2" id="iniciarBtn">Iniciar</button>
     </div>
 
     <div id="mensajes" class="list-group"></div>
@@ -21,51 +21,66 @@
 
   <script>
     let intervalo;
+    const leidos = new Set();
 
-    async function iniciarChat() {
+    document.getElementById('iniciarBtn').addEventListener('click', async () => {
       const url = document.getElementById('urlInput').value.trim();
       if (!url) {
         alert('Por favor, pega la URL del directo de YouTube.');
         return;
       }
+
       const res = await fetch('/api/iniciar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url })
       });
+
       const data = await res.json();
       if (res.ok) {
-        if (intervalo) clearInterval(intervalo);
+        clearInterval(intervalo);
         cargarMensajes();
         intervalo = setInterval(cargarMensajes, 20000);
       } else {
         alert(data.error || 'Error al iniciar el chat.');
       }
-    }
+    });
 
     async function cargarMensajes() {
-      const res = await fetch('/api/mensajes');
-      if (!res.ok) return;
-      const data = await res.json();
+      try {
+        const res = await fetch('/api/mensajes');
+        if (!res.ok) throw new Error('Error en la respuesta');
 
-      const cont = document.getElementById('mensajes');
-      cont.innerHTML = '';
+        const data = await res.json();
+        const cont = document.getElementById('mensajes');
+        cont.innerHTML = '';
 
-      data.mensajes.forEach(msg => {
-        const div = document.createElement('div');
-        div.className = 'list-group-item d-flex align-items-center';
+        data.mensajes.forEach(msg => {
+          const div = document.createElement('div');
+          div.className = 'list-group-item d-flex align-items-center';
 
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.className = 'form-check-input me-2';
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.className = 'form-check-input me-2';
+          checkbox.checked = leidos.has(msg.id);
+          checkbox.addEventListener('change', () => {
+            if (checkbox.checked) {
+              leidos.add(msg.id);
+            } else {
+              leidos.delete(msg.id);
+            }
+          });
 
-        const contenido = document.createElement('div');
-        contenido.textContent = `[${new Date(msg.publishedAt).toLocaleTimeString()}] ${msg.author}: ${msg.message}`;
+          const contenido = document.createElement('div');
+          contenido.textContent = `[${new Date(msg.publishedAt).toLocaleTimeString()}] ${msg.author}: ${msg.message}`;
 
-        div.appendChild(checkbox);
-        div.appendChild(contenido);
-        cont.appendChild(div);
-      });
+          div.appendChild(checkbox);
+          div.appendChild(contenido);
+          cont.appendChild(div);
+        });
+      } catch (error) {
+        console.error('Error al cargar mensajes:', error);
+      }
     }
   </script>
 </body>

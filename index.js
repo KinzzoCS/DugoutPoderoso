@@ -56,10 +56,13 @@ app.get('/api/mensajes', async (req, res) => {
   if (!data) return res.status(500).json({ error: 'Error al obtener mensajes' });
 
   nextPageToken = data.nextPageToken;
+
+  // 👇 Acumulamos los nuevos sin duplicar
   mensajes = mergeMessages(mensajes, data.messages);
 
   res.json({ mensajes, mensajesLeidos: Array.from(mensajesLeidos) });
 });
+
 
 // Marcar mensajes como leídos o no
 app.post('/api/marcar-leido', (req, res) => {
