@@ -77,6 +77,28 @@ app.post('/api/marcar-leido', (req, res) => {
   res.json({ success: true });
 });
 
+// Palabras prohibidas o no deseadas
+const palabrasProhibidas = [
+  'albures', 'formula59', 'MinerosTV', 'odio',
+  'pendejo', 'idiota', 'estúpido', 'mierda', 'puta', 'joto', 'marica', 'culero'
+];
+
+// Función de filtro
+function esMensajeValido(msg) {
+  const texto = msg.message.toLowerCase();
+  const contieneHashtag = texto.includes('#mineros') || texto.includes('#lapoderosa');
+  const contieneProhibidas = palabrasProhibidas.some(palabra => texto.includes(palabra));
+  return contieneHashtag && !contieneProhibidas;
+}
+
+// Ruta del modo Dugout Poderoso
+app.get('/api/mensajes-poderosos', (req, res) => {
+  if (!mensajes.length) return res.json({ mensajes: [] });
+  const mensajesFiltrados = mensajes.filter(esMensajeValido);
+  res.json({ mensajes: mensajesFiltrados });
+});
+
+
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
