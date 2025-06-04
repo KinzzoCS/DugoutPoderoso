@@ -1,83 +1,90 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Centro de Mensajes</title>
-<style>
-  body { font-family: Arial, sans-serif; margin: 1em; }
-  .mensaje { padding: 0.5em; border-bottom: 1px solid #ccc; display: flex; align-items: center; }
-  .contenido { flex-grow: 1; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Centro de Mensajes</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
 </head>
-<body>
-  <h2>Centro de Mensajes</h2>
-  <div>
-    <input id="urlInput" type="text" placeholder="Pega la URL del directo de YouTube aquí" style="width: 80%;" />
-    <button onclick="iniciarChat()">Iniciar Chat</button>
+<body class="bg-light">
+  <div class="container py-3">
+    <h2 class="mb-4 text-center">Centro de Mensajes</h2>
+
+    <div class="input-group mb-3">
+      <input id="urlInput" type="text" class="form-control" placeholder="Pega la URL del directo de YouTube aquí" />
+      <button class="btn btn-primary" onclick="iniciarChat()">Iniciar Chat</button>
+    </div>
+
+    <div id="mensajes" class="list-group" style="max-height: 70vh; overflow-y: auto;"></div>
   </div>
-  <div id="mensajes"></div>
 
-<script>
-  let mensajesLeidos = new Set();
+  <script>
+    let mensajes = [];
+    let mensajesLeidos = new Set();
 
-  async function iniciarChat() {
-    const url = document.getElementById('urlInput').value;
-    if (!url) return alert('Pega la URL del directo primero');
-    const res = await fetch('/api/iniciar-chat', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ url })
-    });
-    const data = await res.json();
-    if (res.ok) {
-      mensajesLeidos = new Set();
-      cargarMensajes();
-    } else {
-      alert(data.error);
+    async function iniciarChat() {
+      const url = document.getElementById('urlInput').value.trim();
+      if (!url) {
+        alert('Por favor, pega la URL del directo de YouTube.');
+        return;
+      }
+      const res = await fetch('/api/iniciar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        mensajes = [];
+        mensajesLeidos = new Set();
+        cargarMensajes();
+      } else {
+        alert(data.error || 'Error al iniciar el chat.');
+      }
     }
-  }
 
-  async function cargarMensajes() {
-    const res = await fetch('/api/mensajes');
-    if (!res.ok) return;
-    const data = await res.json();
+    async function cargarMensajes() {
+      const res = await fetch('/api/mensajes');
+      if (!res.ok) return;
+      const data = await res.json();
 
-    // Actualizar estado de mensajes leídos
-    mensajesLeidos = new Set(data.mensajesLeidos);
+      mensajesLeidos = new Set(data.mensajesLeidos);
 
-    const cont = document.getElementById('mensajes');
-    cont.innerHTML = '';
+      // Solo agregar mensajes nuevos
+      const nuevos = data.mensajes.filter(m => !mensajes.find(x => x.id === m.id));
+      mensajes = mensajes.concat(nuevos);
 
-    data.mensajes.forEach(msg => {
-      const div = document.createElement('div');
-      div.className = 'mensaje';
+      const cont = document.getElementById('mensajes');
+      cont.innerHTML = '';
 
-      const checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-      checkbox.checked = mensajesLeidos.has(msg.id);
-      checkbox.addEventListener('change', () => marcarLeido(msg.id, checkbox.checked));
+      mensajes.forEach(msg => {
+        const div = document.createElement('div');
+        div.className = 'list-group-item d-flex align-items-center';
 
-      const contenido = document.createElement('div');
-      contenido.className = 'contenido';
-      contenido.textContent = `[${new Date(msg.publishedAt).toLocaleTimeString()}] ${msg.author}: ${msg.message}`;
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.className = 'form-check-input me-2';
+        checkbox.checked = mensajesLeidos.has(msg.id);
+        checkbox.addEventListener('change', () => marcarLeido(msg.id, checkbox.checked));
 
-      div.appendChild(checkbox);
-      div.appendChild(contenido);
-      cont.appendChild(div);
-    });
+        const contenido = document.createElement('div');
+        contenido.textContent = `[${new Date(msg.publishedAt).toLocaleTimeString()}] ${msg.author}: ${msg.message}`;
 
-    // Actualiza cada 15 segundos
-    setTimeout(cargarMensajes, 15000);
-  }
+        div.appendChild(checkbox);
+        div.appendChild(contenido);
+        cont.appendChild(div);
+      });
 
-  async function marcarLeido(messageId, leido) {
-    await fetch('/api/marcar-leido', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ messageId, leido })
-    });
-  }
-</script>
+      setTimeout(cargarMensajes, 15000);
+    }
+
+    async function marcarLeido(id, leido) {
+      await fetch('/api/marcar-leido', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, leido })
+      });
+    }
+  </script>
 </body>
 </html>

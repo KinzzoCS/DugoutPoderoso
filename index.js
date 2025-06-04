@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const {
@@ -7,66 +8,70 @@ const {
 } = require('./utils/youtube');
 
 const app = express();
+
 const PORT = process.env.PORT || 3000;
+
+let liveChatId = null;
+let nextPageToken = '';
+let mensajes = [];
+let mensajesLeidos = new Set();
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
-// Datos en memoria para los mensajes y el estado del checkbox
-let mensajes = [];
-let mensajesLeidos = new Set();
+// Evita duplicados al agregar mensajes
+function mergeMessages(oldMessages, newMessages) {
+  const ids = new Set(oldMessages.map(m => m.id));
+  const merged = [...oldMessages];
+  newMessages.forEach(m => {
+    if (!ids.has(m.id)) {
+      merged.push(m);
+    }
+  });
+  return merged;
+}
 
-let liveChatId = '';
-let nextPageToken = '';
-
-// Ruta raíz con dos botones
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// Centro de mensajes con checkbox
-app.get('/centro-mensajes', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'centro-mensajes.html'));
-});
-
-// API para iniciar chat (recibe URL del directo)
-app.post('/api/iniciar-chat', async (req, res) => {
+// Ruta para iniciar chat con URL desde frontend
+app.post('/api/iniciar', async (req, res) => {
   const { url } = req.body;
   const videoId = extractVideoId(url);
-  if (!videoId) return res.status(400).json({ error: 'ID de video inválido' });
+  if (!videoId) return res.status(400).json({ error: 'No se pudo extraer el ID del video.' });
 
-  liveChatId = await getLiveChatId(videoId);
-  if (!liveChatId) return res.status(404).json({ error: 'No se encontró chat en vivo' });
+  const chatId = await getLiveChatId(videoId);
+  if (!chatId) return res.status(404).json({ error: 'No se encontró chat en vivo.' });
 
-  mensajes = [];
-  mensajesLeidos.clear();
+  liveChatId = chatId;
   nextPageToken = '';
-  res.json({ message: 'Chat iniciado' });
+  mensajes = [];
+  mensajesLeidos = new Set();
+
+  res.json({ message: 'Chat iniciado correctamente.' });
 });
 
-// API para obtener mensajes nuevos
+// Obtener mensajes actualizados
 app.get('/api/mensajes', async (req, res) => {
   if (!liveChatId) return res.status(400).json({ error: 'Chat no iniciado' });
+
   const data = await getLiveChatMessages(liveChatId, nextPageToken);
   if (!data) return res.status(500).json({ error: 'Error al obtener mensajes' });
 
-  // Guardamos mensajes y nextPageToken
   nextPageToken = data.nextPageToken;
-  // Añadimos solo los nuevos
-  mensajes.push(...data.messages);
+  mensajes = mergeMessages(mensajes, data.messages);
 
   res.json({ mensajes, mensajesLeidos: Array.from(mensajesLeidos) });
 });
 
-// API para marcar mensaje como leído
+// Marcar mensajes como leídos o no
 app.post('/api/marcar-leido', (req, res) => {
-  const { messageId, leido } = req.body;
-  if (leido) mensajesLeidos.add(messageId);
-  else mensajesLeidos.delete(messageId);
+  const { id, leido } = req.body;
+  if (!id) return res.status(400).json({ error: 'Falta id de mensaje' });
+
+  if (leido) mensajesLeidos.add(id);
+  else mensajesLeidos.delete(id);
 
   res.json({ success: true });
 });
 
 app.listen(PORT, () => {
-  console.log(`Servidor escuchando en puerto ${PORT}`);
+  console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
