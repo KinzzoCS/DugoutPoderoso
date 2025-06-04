@@ -8,7 +8,7 @@
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background-color: #1a1a1a;
+      background-color: #11ff00;
       color: #fff;
       display: flex;
       flex-direction: column;
@@ -22,32 +22,43 @@
       margin-bottom: 2rem;
     }
 
-    #comentario {
-      font-size: 1.5rem;
-      text-align: center;
-      max-width: 80%;
-      font-weight: bold;
-      color: white;
-    }
-
     #trapecio {
       width: 100%;
       height: 150px;
       background: linear-gradient(to right, #333, #222);
-      clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
+      clip-path: polygon(80% 0%, 20% 0%, 0% 100%, 100% 100%);
+      transform: scaleY(-1); /* Invierte el trapecio */
       display: flex;
-      justify-content: center;
+      justify-content: flex-start;
       align-items: center;
-      flex-direction: column;
-      padding: 1rem;
+      padding: 0;
     }
 
-    #trapecio h1 {
+    .contenido {
+      transform: scaleY(-1); /* Reinvierte el contenido para que se vea normal */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      width: 100%;
+      padding: 0.5rem;
+    }
+
+    .titulo {
       font-size: 2rem;
       font-weight: bold;
       color: #fff;
       text-shadow: 1px 1px 2px #000;
-      margin: 0;
+      margin: 0.3rem 0;
+    }
+
+    .comentario {
+      font-size: 1.4rem;
+      text-align: center;
+      max-width: 80%;
+      font-weight: bold;
+      color: white;
     }
 
     .rojo {
@@ -89,8 +100,10 @@
 </head>
 <body>
   <div id="trapecio">
-    <h1>Dugout <span class="rojo">Poderoso</span></h1>
-    <div id="comentario">Espera mientras cargamos comentarios...</div>
+    <div class="contenido">
+      <div class="titulo">Dugout <span class="rojo">Poderoso</span></div>
+      <div class="comentario" id="comentario">Espera mientras cargamos comentarios...</div>
+    </div>
   </div>
 
   <div id="formulario">
@@ -98,7 +111,7 @@
     <button onclick="iniciarChat()">Iniciar</button>
   </div>
 
-  <div id="sugerencias">
+  <div id="sugerencias" style="display: none;">
     <p>✨ Comenta <span class="rojo">#Mineros</span> o <span class="rojo">#LaPoderosa</span> para aparecer aquí.</p>
     <p>🎤 Participa y tu mensaje puede brillar en pantalla.</p>
     <p>💬 ¡Anímate y únete a la conversación poderosa!</p>
