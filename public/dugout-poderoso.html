@@ -22,35 +22,38 @@
       margin-bottom: 2rem;
     }
 
-    #comentario {
-      font-size: 1.5rem;
-      margin: 2rem 1rem;
-      text-align: center;
-      max-width: 80%;
-      font-weight: bold;
-      color: white;
-    }
-
     #trapecio {
       width: 100%;
-      height: 100px;
+      height: 180px;
       background: linear-gradient(to right, #333, #222);
       clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
+      padding: 1rem;
     }
 
-    #trapecio h1 {
+    #comentario h1 {
       font-size: 2rem;
       font-weight: bold;
       color: #fff;
       text-shadow: 1px 1px 2px #000;
+      margin: 0;
     }
 
     .rojo {
       color: red;
       font-weight: bold;
+    }
+
+    #mensaje-mostrado {
+      font-size: 1.2rem;
+      color: white;
+      max-width: 80%;
+      text-align: center;
+      transition: all 0.5s ease-in-out;
+      margin-top: 0.5rem;
     }
 
     #sugerencias {
@@ -87,15 +90,16 @@
 </head>
 <body>
   <div id="trapecio">
-    <h1>Dugout <span class="rojo">Poderoso</span></h1>
+    <div id="comentario">
+      <h1>Dugout <span class="rojo">Poderoso</span></h1>
+      <div id="mensaje-mostrado">Espera mientras cargamos comentarios...</div>
+    </div>
   </div>
 
   <div id="formulario">
     <input type="text" id="urlInput" placeholder="URL del en vivo" />
     <button onclick="iniciarChat()">Iniciar</button>
   </div>
-
-  <div id="comentario">Espera mientras cargamos comentarios...</div>
 
   <div id="sugerencias">
     <p>✨ Comenta <span class="rojo">#Mineros</span> o <span class="rojo">#LaPoderosa</span> para aparecer aquí.</p>
@@ -104,95 +108,104 @@
   </div>
 
   <script>
-  let mensajesPoderosos = [];
-  let mensajeIndex = 0;
+    let mensajesPoderosos = [];
+    let mensajeIndex = 0;
 
-  console.log('🔥 Script cargado correctamente');
+    console.log('🔥 Script cargado correctamente');
 
-  async function iniciarChat() {
-    const url = document.getElementById('urlInput').value;
-    console.log('➡️ URL ingresada:', url);
+    async function iniciarChat() {
+      const url = document.getElementById('urlInput').value;
+      console.log('➡️ URL ingresada:', url);
 
-    if (!url) {
-      console.warn('⚠️ No se ingresó URL');
-      return alert('Debes ingresar una URL');
-    }
-
-    try {
-      const res = await fetch('/api/iniciar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url })
-      });
-
-      const data = await res.json();
-      console.log('📨 Respuesta de /api/iniciar:', data);
-
-      if (!res.ok) throw new Error(data.error || 'Error al iniciar el chat');
-
-      document.getElementById('formulario').style.display = 'none';
-      comenzarActualizacion();
-    } catch (error) {
-      console.error("❌ Error al iniciar el chat:", error);
-      alert(error.message || 'Hubo un problema al iniciar el chat.');
-    }
-  }
-
-  async function obtenerMensajes() {
-    try {
-      const res = await fetch('/api/mensajes-poderosos');
-      const data = await res.json();
-      console.log('📥 Comentarios poderosos recibidos:', data.mensajes);
-
-      if (Array.isArray(data.mensajes) && data.mensajes.length > 0) {
-        mensajesPoderosos = data.mensajes;
+      if (!url) {
+        console.warn('⚠️ No se ingresó URL');
+        return alert('Debes ingresar una URL');
       }
-    } catch (error) {
-      console.error('❌ Error al obtener mensajes:', error);
+
+      try {
+        const res = await fetch('/api/iniciar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url })
+        });
+
+        const data = await res.json();
+        console.log('📨 Respuesta de /api/iniciar:', data);
+
+        if (!res.ok) throw new Error(data.error || 'Error al iniciar el chat');
+
+        document.getElementById('formulario').style.display = 'none';
+        comenzarActualizacion();
+      } catch (error) {
+        console.error("❌ Error al iniciar el chat:", error);
+        alert(error.message || 'Hubo un problema al iniciar el chat.');
+      }
     }
-  }
 
-  function mostrarComentario() {
-    const div = document.getElementById('comentario');
+    async function obtenerMensajes() {
+      try {
+        const res = await fetch('/api/mensajes-poderosos');
+        const data = await res.json();
+        console.log('📥 Comentarios poderosos recibidos:', data.mensajes);
 
-    if (mensajesPoderosos.length === 0) {
-      div.innerHTML = '🔥 Comenta <span class="rojo">#Mineros</span> o <span class="rojo">#LaPoderosa</span> para aparecer aquí.';
-      return;
+        if (Array.isArray(data.mensajes) && data.mensajes.length > 0) {
+          mensajesPoderosos = data.mensajes;
+        }
+      } catch (error) {
+        console.error('❌ Error al obtener mensajes:', error);
+      }
     }
 
-    const msg = mensajesPoderosos[mensajeIndex];
-    div.innerHTML = resaltarHashtags(msg.message);
+    function mostrarComentario() {
+      const div = document.getElementById('mensaje-mostrado');
 
-    mensajeIndex = (mensajeIndex + 1) % mensajesPoderosos.length;
-  }
+      if (mensajesPoderosos.length === 0) {
+        div.innerHTML = `
+          <p>✨ Comenta <span class="rojo">#Mineros</span> o <span class="rojo">#LaPoderosa</span> para aparecer aquí.</p>
+          <p>🎤 Participa y tu mensaje puede brillar en pantalla.</p>
+          <p>💬 ¡Anímate y únete a la conversación poderosa!</p>
+        `;
+        return;
+      }
 
-  function resaltarHashtags(texto) {
-    return texto
-      .replace(/#Mineros/gi, '<span class="rojo">#Mineros</span>')
-      .replace(/#LaPoderosa/gi, '<span class="rojo">#LaPoderosa</span>');
-  }
+      const msg = mensajesPoderosos[mensajeIndex];
+      div.innerHTML = `
+        <div>
+          <div style="font-size: 1rem; color: #aaa;">${msg.author}</div>
+          <div style="font-weight: bold;">${resaltarHashtags(msg.message)}</div>
+        </div>
+      `;
 
-  function comenzarActualizacion() {
-    // 1. Actualizar mensajes del backend desde YouTube cada 20 segundos
-    setInterval(() => {
-      fetch('/api/mensajes')
-        .then(r => r.json())
-        .then(data => console.log('🔄 Backend actualizado con nuevos mensajes:', data.mensajes))
-        .catch(err => console.error('❌ Error actualizando mensajes desde YouTube:', err));
-    }, 20000);
+      mensajeIndex = (mensajeIndex + 1) % mensajesPoderosos.length;
+    }
 
-    // 2. Obtener mensajes filtrados para mostrar
-    obtenerMensajes();
-    setInterval(() => {
+    function resaltarHashtags(texto) {
+      return texto
+        .replace(/#Mineros/gi, '<span class="rojo">#Mineros</span>')
+        .replace(/#LaPoderosa/gi, '<span class="rojo">#LaPoderosa</span>');
+    }
+
+    function comenzarActualizacion() {
+      // 1. Actualizar mensajes desde YouTube cada 20 segundos
+      setInterval(() => {
+        fetch('/api/mensajes')
+          .then(r => r.json())
+          .then(data => console.log('🔄 Backend actualizado con nuevos mensajes:', data.mensajes))
+          .catch(err => console.error('❌ Error actualizando mensajes desde YouTube:', err));
+      }, 20000);
+
+      // 2. Obtener mensajes filtrados del backend
       obtenerMensajes();
-    }, 10000);
+      setInterval(() => {
+        obtenerMensajes();
+      }, 10000);
 
-    // 3. Mostrar mensajes uno a uno
-    setInterval(() => {
+      // 3. Mostrar mensajes en rotación
       mostrarComentario();
-    }, 5000);
-  }
-</script>
-
+      setInterval(() => {
+        mostrarComentario();
+      }, 5000);
+    }
+  </script>
 </body>
 </html>

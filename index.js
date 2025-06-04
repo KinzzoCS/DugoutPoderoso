@@ -47,7 +47,7 @@ app.post('/api/iniciar', async (req, res) => {
   res.json({ message: 'Chat iniciado correctamente.' });
 });
 
-// Ruta para actualizar mensajes desde YouTube
+// Ruta para obtener mensajes crudos desde YouTube manualmente
 app.get('/api/mensajes', async (req, res) => {
   if (!liveChatId) return res.status(400).json({ error: 'Chat no iniciado' });
 
@@ -56,7 +56,7 @@ app.get('/api/mensajes', async (req, res) => {
     if (!data) return res.status(500).json({ error: 'Error al obtener mensajes' });
 
     nextPageToken = data.nextPageToken;
-    mensajes = data.messages; // simplemente reemplazamos mensajes con los nuevos
+    mensajes = data.messages;
 
     res.json({ mensajes });
   } catch (err) {
@@ -95,6 +95,22 @@ app.get('/api/mensajes-poderosos', (req, res) => {
   const mensajesFiltrados = mensajes.filter(esMensajeValido);
   res.json({ mensajes: mensajesFiltrados });
 });
+
+// ⏱ Ciclo automático para actualizar mensajes cada 20 segundos
+setInterval(async () => {
+  if (!liveChatId) return;
+
+  try {
+    const data = await getLiveChatMessages(liveChatId, nextPageToken);
+    if (data && data.messages) {
+      nextPageToken = data.nextPageToken;
+      mensajes = mergeMessages(mensajes, data.messages);
+      console.log(`✅ Mensajes actualizados: ${mensajes.length}`);
+    }
+  } catch (error) {
+    console.error('🚨 Error actualizando mensajes en ciclo automático:', error.message);
+  }
+}, 20000); // cada 20 segundos
 
 app.listen(PORT, () => {
   console.log(`🔥 Servidor corriendo en http://localhost:${PORT}`);
