@@ -19,72 +19,82 @@
   </div>
 
   <script>
-    let mensajes = [];
-    let mensajesLeidos = new Set();
+  let mensajes = new Map();
+  let mensajesLeidos = new Set();
 
-    async function iniciarChat() {
-      const url = document.getElementById('urlInput').value.trim();
-      if (!url) {
-        alert('Por favor, pega la URL del directo de YouTube.');
-        return;
+  async function iniciarChat() {
+    const url = document.getElementById('urlInput').value.trim();
+    if (!url) {
+      alert('Por favor, pega la URL del directo de YouTube.');
+      return;
+    }
+    const res = await fetch('/api/iniciar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      mensajes.clear();
+      mensajesLeidos.clear();
+      cargarMensajes();
+    } else {
+      alert(data.error || 'Error al iniciar el chat.');
+    }
+  }
+
+  async function cargarMensajes() {
+    const res = await fetch('/api/mensajes');
+    if (!res.ok) return;
+    const data = await res.json();
+
+    data.mensajes.forEach(msg => {
+      if (!mensajes.has(msg.id)) {
+        mensajes.set(msg.id, msg);
       }
-      const res = await fetch('/api/iniciar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        mensajes = [];
-        mensajesLeidos = new Set();
-        cargarMensajes();
-      } else {
-        alert(data.error || 'Error al iniciar el chat.');
-      }
-    }
+    });
 
-    async function cargarMensajes() {
-      const res = await fetch('/api/mensajes');
-      if (!res.ok) return;
-      const data = await res.json();
+    mensajesLeidos = new Set(data.mensajesLeidos);
 
-      mensajesLeidos = new Set(data.mensajesLeidos);
+    renderMensajes();
 
-      // Solo agregar mensajes nuevos
-      const nuevos = data.mensajes.filter(m => !mensajes.find(x => x.id === m.id));
-      mensajes = mensajes.concat(nuevos);
+    setTimeout(cargarMensajes, 15000);
+  }
 
-      const cont = document.getElementById('mensajes');
-      cont.innerHTML = '';
+  function renderMensajes() {
+    const cont = document.getElementById('mensajes');
+    cont.innerHTML = ''; // O puedes optimizar y hacer patching
 
-      mensajes.forEach(msg => {
-        const div = document.createElement('div');
-        div.className = 'list-group-item d-flex align-items-center';
+    mensajes.forEach(msg => {
+      const div = document.createElement('div');
+      div.className = 'list-group-item d-flex align-items-center';
 
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.className = 'form-check-input me-2';
-        checkbox.checked = mensajesLeidos.has(msg.id);
-        checkbox.addEventListener('change', () => marcarLeido(msg.id, checkbox.checked));
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.className = 'form-check-input me-2';
+      checkbox.checked = mensajesLeidos.has(msg.id);
+      checkbox.addEventListener('change', () => marcarLeido(msg.id, checkbox.checked));
 
-        const contenido = document.createElement('div');
-        contenido.textContent = `[${new Date(msg.publishedAt).toLocaleTimeString()}] ${msg.author}: ${msg.message}`;
+      const contenido = document.createElement('div');
+      contenido.textContent = `[${new Date(msg.publishedAt).toLocaleTimeString()}] ${msg.author}: ${msg.message}`;
 
-        div.appendChild(checkbox);
-        div.appendChild(contenido);
-        cont.appendChild(div);
-      });
+      div.appendChild(checkbox);
+      div.appendChild(contenido);
+      cont.appendChild(div);
+    });
+  }
 
-      setTimeout(cargarMensajes, 15000);
-    }
+  async function marcarLeido(id, leido) {
+    if (leido) mensajesLeidos.add(id);
+    else mensajesLeidos.delete(id);
 
-    async function marcarLeido(id, leido) {
-      await fetch('/api/marcar-leido', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, leido })
-      });
-    }
-  </script>
+    await fetch('/api/marcar-leido', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, leido })
+    });
+  }
+</script>
+
 </body>
 </html>
