@@ -20,7 +20,7 @@
   </div>
 
   <script>
-    let mensajesLeidos = new Set();
+    let intervalo;
 
     async function iniciarChat() {
       const url = document.getElementById('urlInput').value.trim();
@@ -35,8 +35,9 @@
       });
       const data = await res.json();
       if (res.ok) {
-        mensajesLeidos.clear();
+        if (intervalo) clearInterval(intervalo);
         cargarMensajes();
+        intervalo = setInterval(cargarMensajes, 20000);
       } else {
         alert(data.error || 'Error al iniciar el chat.');
       }
@@ -46,8 +47,6 @@
       const res = await fetch('/api/mensajes');
       if (!res.ok) return;
       const data = await res.json();
-
-      mensajesLeidos = new Set(data.mensajesLeidos);
 
       const cont = document.getElementById('mensajes');
       cont.innerHTML = '';
@@ -59,8 +58,6 @@
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.className = 'form-check-input me-2';
-        checkbox.checked = mensajesLeidos.has(msg.id);
-        checkbox.addEventListener('change', () => marcarLeido(msg.id, checkbox.checked));
 
         const contenido = document.createElement('div');
         contenido.textContent = `[${new Date(msg.publishedAt).toLocaleTimeString()}] ${msg.author}: ${msg.message}`;
@@ -68,19 +65,6 @@
         div.appendChild(checkbox);
         div.appendChild(contenido);
         cont.appendChild(div);
-      });
-
-      setTimeout(cargarMensajes, 15000);
-    }
-
-    async function marcarLeido(id, leido) {
-      if (leido) mensajesLeidos.add(id);
-      else mensajesLeidos.delete(id);
-
-      await fetch('/api/marcar-leido', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, leido })
       });
     }
   </script>
