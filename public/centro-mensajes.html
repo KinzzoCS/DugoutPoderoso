@@ -20,7 +20,6 @@
   </div>
 
   <script>
-    let mensajes = new Map();
     let mensajesLeidos = new Set();
 
     async function iniciarChat() {
@@ -36,7 +35,6 @@
       });
       const data = await res.json();
       if (res.ok) {
-        mensajes.clear();
         mensajesLeidos.clear();
         cargarMensajes();
       } else {
@@ -49,26 +47,12 @@
       if (!res.ok) return;
       const data = await res.json();
 
-      let nuevos = 0;
-      data.mensajes.forEach(msg => {
-        if (!mensajes.has(msg.id)) {
-          mensajes.set(msg.id, msg);
-          nuevos++;
-        }
-      });
+      mensajesLeidos = new Set(data.mensajesLeidos);
 
-      data.mensajesLeidos.forEach(id => mensajesLeidos.add(id));
-
-      if (nuevos > 0) renderMensajes();
-      setTimeout(cargarMensajes, 15000);
-    }
-
-    function renderMensajes() {
       const cont = document.getElementById('mensajes');
       cont.innerHTML = '';
-      const list = Array.from(mensajes.values()).sort((a, b) => new Date(a.publishedAt) - new Date(b.publishedAt));
 
-      list.forEach(msg => {
+      data.mensajes.forEach(msg => {
         const div = document.createElement('div');
         div.className = 'list-group-item d-flex align-items-center';
 
@@ -85,6 +69,8 @@
         div.appendChild(contenido);
         cont.appendChild(div);
       });
+
+      setTimeout(cargarMensajes, 15000);
     }
 
     async function marcarLeido(id, leido) {
