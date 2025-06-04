@@ -52,15 +52,17 @@ app.post('/api/iniciar', async (req, res) => {
 app.get('/api/mensajes', async (req, res) => {
   if (!liveChatId) return res.status(400).json({ error: 'Chat no iniciado' });
 
-  const data = await getLiveChatMessages(liveChatId, nextPageToken);
-  if (!data) return res.status(500).json({ error: 'Error al obtener mensajes' });
+  try {
+    const data = await getLiveChatMessages(liveChatId, nextPageToken);
+    if (!data) return res.status(500).json({ error: 'Error al obtener mensajes' });
 
-  nextPageToken = data.nextPageToken;
+    nextPageToken = data.nextPageToken;
+    mensajes = data.messages; // simplemente reemplazamos mensajes para que siempre traiga los nuevos
 
-  // 👇 Acumulamos los nuevos sin duplicar
-  mensajes = mergeMessages(mensajes, data.messages);
-
-  res.json({ mensajes, mensajesLeidos: Array.from(mensajesLeidos) });
+    res.json({ mensajes });
+  } catch (err) {
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
 });
 
 
