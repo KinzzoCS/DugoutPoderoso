@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Chat en Vivo</title>
+  <style>
+    body {
+      font-family: monospace;
+      padding: 1em;
+      background: #000;
+      color: #0f0;
+    }
+    #chat {
+      white-space: pre-wrap;
+      overflow-y: scroll;
+      max-height: 90vh;
+    }
+  </style>
+</head>
+<body>
+  <h1>🟢 Chat en Vivo</h1>
+  <div id="chat">Cargando mensajes...</div>
+
+  <script>
+    async function loadMessages() {
+      const res = await fetch('/messages');
+      const data = await res.json();
+      const chatDiv = document.getElementById('chat');
+      chatDiv.innerText = data.messages.slice(-30).join('\n');
+      chatDiv.scrollTop = chatDiv.scrollHeight;
+    }
+
+    loadMessages(); // primera carga
+    setInterval(loadMessages, 10000); // cada 10 segundos
+  </script>
+</body>
+</html>
