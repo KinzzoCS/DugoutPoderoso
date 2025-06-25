@@ -2,220 +2,181 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Dugout Poderoso</title>
+
+  <!-- Bootstrap CSS -->
+  <link 
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" 
+    rel="stylesheet" 
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" 
+    crossorigin="anonymous"
+  />
+
   <style>
     body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #11ff00;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      height: 100vh;
-      padding-top: 2rem;
+      background-color: #1eff00;
+      color: white;
     }
 
-    #formulario {
-      margin-bottom: 2rem;
+    .tabla-dugout {
+      border: 2px solid #dc3545;
+      background-color: #1e1e1e;
     }
 
-    #trapecio {
-      width: 100%;
-      height: 150px;
-      background: linear-gradient(to right, #333, #222);
-      clip-path: polygon(80% 0%, 20% 0%, 0% 100%, 100% 100%);
-      transform: scaleY(-1); /* Invierte el trapecio */
-      display: flex;
-      justify-content: flex-start;
-      align-items: center;
-      padding: 0;
+    .tabla-dugout th {
+      background-color: #343a40;
+      color: white;
+      border-bottom: 2px solid #dc3545;
     }
 
-    .contenido {
-      transform: scaleY(-1); /* Reinvierte el contenido para que se vea normal */
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 100%;
-      width: 100%;
-      padding: 0.5rem;
+    .tabla-dugout td {
+      background-color: #212529;
+      color: #f8f9fa;
+      vertical-align: middle;
+      text-transform: uppercase;
+    }
+
+    .contenedor-central {
+      min-height: 100vh;
     }
 
     .titulo {
-      font-size: 2rem;
-      font-weight: bold;
-      color: #fff;
-      text-shadow: 1px 1px 2px #000;
-      margin: 0.3rem 0;
-    }
-
-    .comentario {
-      font-size: 1.4rem;
+      font-size: 1.5rem;
+      color: #dc3545;
       text-align: center;
-      max-width: 80%;
-      font-weight: bold;
-      color: white;
-    }
-
-    .rojo {
-      color: red;
+      margin-bottom: 20px;
       font-weight: bold;
     }
 
-    #sugerencias {
-      margin-top: auto;
-      margin-bottom: 2rem;
-      font-size: 1rem;
-      color: #aaa;
-      text-align: center;
+    .tabla-dugout tr {
+      height: 60px;
     }
 
-    input[type="text"] {
-      padding: 0.5rem;
-      border-radius: 0.5rem;
-      border: none;
-      font-size: 1rem;
-      width: 250px;
-    }
-
-    button {
-      padding: 0.5rem 1rem;
-      margin-left: 0.5rem;
+    .hashtag-rojo {
+      color: #dc3545;
       font-weight: bold;
-      border: none;
-      border-radius: 0.5rem;
-      background-color: #444;
-      color: white;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #666;
     }
   </style>
 </head>
 <body>
-  <div id="trapecio">
-    <div class="contenido">
-      <div class="titulo">Dugout <span class="rojo">Poderoso</span></div>
-      <div class="comentario" id="comentario">Espera mientras cargamos comentarios...</div>
-    </div>
+  <div class="container d-flex flex-column justify-content-center align-items-center contenedor-central">
+    <table class="table table-bordered tabla-dugout text-center w-100" style="max-width: 800px;">
+      <thead>
+        <tr><th>Dugout Poderoso</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td id="comentario1">Esperando comentario...</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 
-  <div id="formulario">
-    <input type="text" id="urlInput" placeholder="URL del en vivo" />
-    <button onclick="iniciarChat()">Iniciar</button>
-  </div>
-
-  <div id="sugerencias" style="display: none;">
-    <p>✨ Comenta <span class="rojo">#Mineros</span> o <span class="rojo">#LaPoderosa</span> para aparecer aquí.</p>
-    <p>🎤 Participa y tu mensaje puede brillar en pantalla.</p>
-    <p>💬 ¡Anímate y únete a la conversación poderosa!</p>
-  </div>
+  <!-- Bootstrap JS -->
+  <script 
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" 
+    integrity="sha384-VgpV2GdWxqMDZ6g4go6TZyRn+q2bpQEb+EXZtAv/6jQFQKQtaV6t24fjDxaIu4xk" 
+    crossorigin="anonymous"
+  ></script>
 
   <script>
-    let mensajesPoderosos = [];
-    let mensajeIndex = 0;
+  const comentarioEl = document.getElementById("comentario1");
 
-    console.log('🔥 Script cargado correctamente');
+  const hashtagsPermitidos = ["#mineros", "#lapoderosa"];
+  const palabrasProhibidas = [
+    "pendejo", "idiota", "estúpido", "mierda", "puta",
+    "joto", "marica", "culero", "formula59", "minerostv", "odio"
+  ];
 
-    async function iniciarChat() {
-      const url = document.getElementById('urlInput').value;
-      console.log('➡️ URL ingresada:', url);
+  const recibidos = new Map();
+  const mostrados = new Set();
 
-      if (!url) {
-        console.warn('⚠️ No se ingresó URL');
-        return alert('Debes ingresar una URL');
+  console.log("📡 Dugout Poderoso activo. Esperando mensajes...");
+
+  function normalizarTexto(texto) {
+    return texto
+      .toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^\w# ]/g, "");
+  }
+
+  function contieneHashtagValido(texto) {
+    return hashtagsPermitidos.some(tag => texto.includes(tag));
+  }
+
+  function contieneProhibidas(texto) {
+    return palabrasProhibidas.some(p => texto.includes(p));
+  }
+
+  function resaltarHashtags(texto) {
+    let resultado = texto;
+    hashtagsPermitidos.forEach(tag => {
+      const regex = new RegExp(tag, "gi");
+      resultado = resultado.replace(regex, match => `<span class="hashtag-rojo">${match.toUpperCase()}</span>`);
+    });
+    return resultado;
+  }
+
+  function obtenerMensajeValido(mensajes) {
+    for (const msg of mensajes) {
+      const id = msg.id;
+      const textoCrudo = msg.message || "";
+      const texto = normalizarTexto(textoCrudo);
+
+      if (mostrados.has(texto)) {
+        console.log(`⏩ Ignorado (ya mostrado): ${textoCrudo}`);
+        continue;
+      }
+      if (!contieneHashtagValido(texto)) {
+        console.log(`🚫 Sin hashtag permitido: ${textoCrudo}`);
+        continue;
+      }
+      if (contieneProhibidas(texto)) {
+        console.log(`🛑 Contiene palabra prohibida: ${textoCrudo}`);
+        continue;
       }
 
-      try {
-        const res = await fetch('/api/iniciar', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url })
-        });
-
-        const data = await res.json();
-        console.log('📨 Respuesta de /api/iniciar:', data);
-
-        if (!res.ok) throw new Error(data.error || 'Error al iniciar el chat');
-
-        document.getElementById('formulario').style.display = 'none';
-        comenzarActualizacion();
-      } catch (error) {
-        console.error("❌ Error al iniciar el chat:", error);
-        alert(error.message || 'Hubo un problema al iniciar el chat.');
-      }
+      mostrados.add(texto);
+      console.log(`✅ Mostrando: ${textoCrudo}`);
+      return textoCrudo;
     }
 
-    async function obtenerMensajes() {
-      try {
-        const res = await fetch('/api/mensajes-poderosos');
-        const data = await res.json();
-        console.log('📥 Comentarios poderosos recibidos:', data.mensajes);
+    console.log("🔍 No se encontró mensaje válido esta vez.");
+    return null;
+  }
 
-        if (Array.isArray(data.mensajes)) {
-          mensajesPoderosos = data.mensajes;
-          if (mensajesPoderosos.length === 0) {
-            mensajeIndex = 0;
-          }
+  async function actualizarMensajes() {
+    console.log("🔄 Solicitando mensajes...");
+
+    try {
+      const res = await fetch("/api/mensajes");
+      if (!res.ok) throw new Error(`Respuesta HTTP ${res.status}`);
+      const data = await res.json();
+      const mensajes = data.mensajes || [];
+
+      console.log(`📥 Recibidos: ${mensajes.length}`);
+
+      mensajes.forEach(m => {
+        if (!recibidos.has(m.id)) {
+          recibidos.set(m.id, m);
         }
-      } catch (error) {
-        console.error('❌ Error al obtener mensajes:', error);
-      }
-    }
+      });
 
-    function mostrarComentario() {
-      const div = document.getElementById('comentario');
-
-      if (!Array.isArray(mensajesPoderosos) || mensajesPoderosos.length === 0) {
-        div.innerHTML = `
-          🔥 Comenta <span class="rojo">#Mineros</span> o <span class="rojo">#LaPoderosa</span> para aparecer aquí.<br>
-          🎤 Participa y tu mensaje puede brillar en pantalla.<br>
-          💬 ¡Anímate y únete a la conversación poderosa!
-        `;
-        return;
+      const textoMostrar = obtenerMensajeValido([...recibidos.values()]);
+      if (textoMostrar) {
+        comentarioEl.innerHTML = resaltarHashtags(textoMostrar);
       }
 
-      if (mensajeIndex >= mensajesPoderosos.length) {
-        mensajeIndex = 0;
-      }
-
-      const msg = mensajesPoderosos[mensajeIndex];
-      div.innerHTML = `<strong>${msg.author}</strong><br> ${resaltarHashtags(msg.message)}`;
-      mensajeIndex = (mensajeIndex + 1) % mensajesPoderosos.length;
+    } catch (error) {
+      console.error("❌ Error al obtener mensajes:", error);
+      comentarioEl.textContent = "Error al cargar comentarios...";
     }
+  }
 
-    function resaltarHashtags(texto) {
-      return texto
-        .replace(/#Mineros/gi, '<span class="rojo">#Mineros</span>')
-        .replace(/#LaPoderosa/gi, '<span class="rojo">#LaPoderosa</span>');
-    }
+  actualizarMensajes();
+  setInterval(actualizarMensajes, 60000);
+</script>
 
-    function comenzarActualizacion() {
-      // Backend: actualizar desde YouTube
-      setInterval(() => {
-        fetch('/api/mensajes')
-          .then(r => r.json())
-          .then(data => console.log('🔄 Backend actualizado con nuevos mensajes:', data.mensajes))
-          .catch(err => console.error('❌ Error actualizando mensajes desde YouTube:', err));
-      }, 25000);
-
-      // Obtener mensajes filtrados del backend
-      obtenerMensajes();
-      setInterval(() => {
-        obtenerMensajes();
-      }, 10000);
-
-      // Mostrar comentarios en pantalla
-      setInterval(() => {
-        mostrarComentario();
-      }, 8000);
-    }
-  </script>
 </body>
 </html>
