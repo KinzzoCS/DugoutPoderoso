@@ -60,8 +60,20 @@
   </style>
 </head>
 <body>
-  <div class="container d-flex flex-column justify-content-center align-items-center contenedor-central">
-    <table class="table table-bordered tabla-dugout text-center w-100" style="max-width: 800px;">
+  <div class="container d-flex flex-column justify-content-center align-items-center contenedor-central" style="max-width: 800px;">
+
+    <!-- Input y botón para iniciar chat -->
+    <div class="mb-4 w-100">
+      <label for="urlInput" class="form-label text-white fw-bold">Pega la URL del directo de YouTube:</label>
+      <div class="input-group">
+        <input type="url" class="form-control" id="urlInput" placeholder="https://www.youtube.com/watch?v=..." />
+        <button id="iniciarBtn" class="btn btn-danger">Iniciar Chat</button>
+      </div>
+      <div id="statusMsg" class="mt-2 text-white"></div>
+    </div>
+
+    <!-- Tabla de mensajes -->
+    <table class="table table-bordered tabla-dugout text-center w-100">
       <thead>
         <tr><th>Dugout Poderoso</th></tr>
       </thead>
@@ -81,102 +93,139 @@
   ></script>
 
   <script>
-  const comentarioEl = document.getElementById("comentario1");
+    const comentarioEl = document.getElementById("comentario1");
+    const urlInput = document.getElementById('urlInput');
+    const iniciarBtn = document.getElementById('iniciarBtn');
+    const statusMsg = document.getElementById('statusMsg');
 
-  const hashtagsPermitidos = ["#mineros", "#lapoderosa"];
-  const palabrasProhibidas = [
-    "pendejo", "idiota", "estúpido", "mierda", "puta",
-    "joto", "marica", "culero", "formula59", "minerostv", "odio"
-  ];
+    const hashtagsPermitidos = ["#mineros", "#lapoderosa"];
+    const palabrasProhibidas = [
+      "pendejo", "idiota", "estúpido", "mierda", "puta",
+      "joto", "marica", "culero", "formula59", "minerostv", "odio"
+    ];
 
-  const recibidos = new Map();
-  const mostrados = new Set();
+    const recibidos = new Map();
+    const mostrados = new Set();
 
-  console.log("📡 Dugout Poderoso activo. Esperando mensajes...");
+    console.log("📡 Dugout Poderoso activo. Esperando mensajes...");
 
-  function normalizarTexto(texto) {
-    return texto
-      .toLowerCase()
-      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^\w# ]/g, "");
-  }
-
-  function contieneHashtagValido(texto) {
-    return hashtagsPermitidos.some(tag => texto.includes(tag));
-  }
-
-  function contieneProhibidas(texto) {
-    return palabrasProhibidas.some(p => texto.includes(p));
-  }
-
-  function resaltarHashtags(texto) {
-    let resultado = texto;
-    hashtagsPermitidos.forEach(tag => {
-      const regex = new RegExp(tag, "gi");
-      resultado = resultado.replace(regex, match => `<span class="hashtag-rojo">${match.toUpperCase()}</span>`);
-    });
-    return resultado;
-  }
-
-  function obtenerMensajeValido(mensajes) {
-    for (const msg of mensajes) {
-      const id = msg.id;
-      const textoCrudo = msg.message || "";
-      const texto = normalizarTexto(textoCrudo);
-
-      if (mostrados.has(texto)) {
-        console.log(`⏩ Ignorado (ya mostrado): ${textoCrudo}`);
-        continue;
-      }
-      if (!contieneHashtagValido(texto)) {
-        console.log(`🚫 Sin hashtag permitido: ${textoCrudo}`);
-        continue;
-      }
-      if (contieneProhibidas(texto)) {
-        console.log(`🛑 Contiene palabra prohibida: ${textoCrudo}`);
-        continue;
-      }
-
-      mostrados.add(texto);
-      console.log(`✅ Mostrando: ${textoCrudo}`);
-      return textoCrudo;
+    function normalizarTexto(texto) {
+      return texto
+        .toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^\w# ]/g, "");
     }
 
-    console.log("🔍 No se encontró mensaje válido esta vez.");
-    return null;
-  }
+    function contieneHashtagValido(texto) {
+      return hashtagsPermitidos.some(tag => texto.includes(tag));
+    }
 
-  async function actualizarMensajes() {
-    console.log("🔄 Solicitando mensajes...");
+    function contieneProhibidas(texto) {
+      return palabrasProhibidas.some(p => texto.includes(p));
+    }
 
-    try {
-      const res = await fetch("/api/mensajes");
-      if (!res.ok) throw new Error(`Respuesta HTTP ${res.status}`);
-      const data = await res.json();
-      const mensajes = data.mensajes || [];
-
-      console.log(`📥 Recibidos: ${mensajes.length}`);
-
-      mensajes.forEach(m => {
-        if (!recibidos.has(m.id)) {
-          recibidos.set(m.id, m);
-        }
+    function resaltarHashtags(texto) {
+      let resultado = texto;
+      hashtagsPermitidos.forEach(tag => {
+        const regex = new RegExp(tag, "gi");
+        resultado = resultado.replace(regex, match => `<span class="hashtag-rojo">${match.toUpperCase()}</span>`);
       });
+      return resultado;
+    }
 
-      const textoMostrar = obtenerMensajeValido([...recibidos.values()]);
-      if (textoMostrar) {
-        comentarioEl.innerHTML = resaltarHashtags(textoMostrar);
+    function obtenerMensajeValido(mensajes) {
+      for (const msg of mensajes) {
+        const id = msg.id;
+        const textoCrudo = msg.message || "";
+        const texto = normalizarTexto(textoCrudo);
+
+        if (mostrados.has(texto)) {
+          console.log(`⏩ Ignorado (ya mostrado): ${textoCrudo}`);
+          continue;
+        }
+        if (!contieneHashtagValido(texto)) {
+          console.log(`🚫 Sin hashtag permitido: ${textoCrudo}`);
+          continue;
+        }
+        if (contieneProhibidas(texto)) {
+          console.log(`🛑 Contiene palabra prohibida: ${textoCrudo}`);
+          continue;
+        }
+
+        mostrados.add(texto);
+        console.log(`✅ Mostrando: ${textoCrudo}`);
+        return textoCrudo;
       }
 
-    } catch (error) {
-      console.error("❌ Error al obtener mensajes:", error);
-      comentarioEl.textContent = "Error al cargar comentarios...";
+      console.log("🔍 No se encontró mensaje válido esta vez.");
+      return null;
     }
-  }
 
-  actualizarMensajes();
-  setInterval(actualizarMensajes, 60000);
-</script>
+    async function actualizarMensajes() {
+      console.log("🔄 Solicitando mensajes...");
 
+      try {
+        const res = await fetch("/api/mensajes");
+        if (!res.ok) throw new Error(`Respuesta HTTP ${res.status}`);
+        const data = await res.json();
+        const mensajes = data.mensajes || [];
+
+        console.log(`📥 Recibidos: ${mensajes.length}`);
+
+        mensajes.forEach(m => {
+          if (!recibidos.has(m.id)) {
+            recibidos.set(m.id, m);
+          }
+        });
+
+        const textoMostrar = obtenerMensajeValido([...recibidos.values()]);
+        if (textoMostrar) {
+          comentarioEl.innerHTML = resaltarHashtags(textoMostrar);
+        }
+
+      } catch (error) {
+        console.error("❌ Error al obtener mensajes:", error);
+        comentarioEl.textContent = "Error al cargar comentarios...";
+      }
+    }
+
+    iniciarBtn.addEventListener('click', async () => {
+      const url = urlInput.value.trim();
+      if (!url) {
+        statusMsg.textContent = "⚠️ Por favor, ingresa una URL válida.";
+        return;
+      }
+
+      statusMsg.textContent = "⏳ Iniciando chat...";
+
+      try {
+        const res = await fetch('/api/iniciar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          statusMsg.textContent = `❌ Error: ${data.error || 'No se pudo iniciar el chat'}`;
+          return;
+        }
+
+        statusMsg.textContent = "✅ Chat iniciado correctamente. Cargando mensajes...";
+        recibidos.clear();
+        mostrados.clear();
+        comentarioEl.textContent = "Esperando comentario...";
+        actualizarMensajes();
+
+      } catch (error) {
+        statusMsg.textContent = "❌ Error al iniciar el chat.";
+        console.error("Error al iniciar chat:", error);
+      }
+    });
+
+    // Puedes llamar actualizarMensajes() cada minuto para refrescar (si quieres).
+    // Pero idealmente espera a iniciar chat primero para evitar llamadas inútiles.
+  </script>
 </body>
 </html>
