@@ -165,6 +165,8 @@
 
     async function actualizarMensajes() {
       console.log("🔄 Solicitando mensajes...");
+      
+
 
       try {
         const res = await fetch("/api/mensajes");
@@ -173,7 +175,8 @@
         const mensajes = data.mensajes || [];
 
         console.log(`📥 Recibidos: ${mensajes.length}`);
-
+        console.log("📬 Mensajes recibidos del backend:", mensajes);
+        
         mensajes.forEach(m => {
           if (!recibidos.has(m.id)) {
             recibidos.set(m.id, m);
