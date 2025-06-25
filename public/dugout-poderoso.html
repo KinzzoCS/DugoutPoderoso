@@ -107,6 +107,8 @@
     const recibidos = new Map();
     const mostrados = new Set();
 
+    const MAX_MENSAJES = 300;
+
     console.log("📡 Dugout Poderoso activo. Esperando mensajes...");
 
     function normalizarTexto(texto) {
@@ -178,9 +180,23 @@
           }
         });
 
+        // Limitar tamaño para no saturar memoria
+        if (recibidos.size > MAX_MENSAJES) {
+          // Eliminar mensajes más antiguos (FIFO)
+          const keys = recibidos.keys();
+          while (recibidos.size > MAX_MENSAJES) {
+            const key = keys.next().value;
+            recibidos.delete(key);
+            mostrados.clear();  // Reseteamos para evitar bloqueo por filtro
+            console.log(`🗑️ Eliminado mensaje viejo: ${key}`);
+          }
+        }
+
         const textoMostrar = obtenerMensajeValido([...recibidos.values()]);
         if (textoMostrar) {
           comentarioEl.innerHTML = resaltarHashtags(textoMostrar);
+        } else {
+          comentarioEl.textContent = "Esperando comentario válido...";
         }
 
       } catch (error) {
@@ -224,8 +240,8 @@
       }
     });
 
-    // Puedes llamar actualizarMensajes() cada minuto para refrescar (si quieres).
-    // Pero idealmente espera a iniciar chat primero para evitar llamadas inútiles.
+    // Actualizamos mensajes cada minuto para mantenerlo fresco
+    setInterval(actualizarMensajes, 60000);
   </script>
 </body>
 </html>

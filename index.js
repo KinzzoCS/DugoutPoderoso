@@ -13,29 +13,24 @@ const PORT = process.env.PORT || 3000;
 let liveChatId = null;
 let nextPageToken = '';
 let mensajes = [];
+let mensajesLeidos = new Set();
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
-// Evita duplicados y limita a 300 mensajes
+// Evita duplicados al agregar mensajes
 function mergeMessages(oldMessages, newMessages) {
   const ids = new Set(oldMessages.map(m => m.id));
   const merged = [...oldMessages];
-
   newMessages.forEach(m => {
     if (!ids.has(m.id)) {
       merged.push(m);
     }
   });
-
-  if (merged.length > 300) {
-    return merged.slice(-300);
-  }
-
   return merged;
 }
 
-// Iniciar el chat con una URL desde frontend
+// Ruta para iniciar chat con URL desde frontend
 app.post('/api/iniciar', async (req, res) => {
   const { url } = req.body;
   const videoId = extractVideoId(url);
@@ -47,11 +42,12 @@ app.post('/api/iniciar', async (req, res) => {
   liveChatId = chatId;
   nextPageToken = '';
   mensajes = [];
+  mensajesLeidos = new Set();
 
   res.json({ message: 'Chat iniciado correctamente.' });
 });
 
-// Obtener mensajes crudos cada vez que el frontend lo pida (1 vez por minuto)
+// Ruta para obtener mensajes crudos desde YouTube
 app.get('/api/mensajes', async (req, res) => {
   if (!liveChatId) return res.status(400).json({ error: 'Chat no iniciado' });
 
