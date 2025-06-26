@@ -86,140 +86,128 @@
   </div>
 
   <!-- Bootstrap JS -->
-  <script 
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" 
-    crossorigin="anonymous"
-  ></script>
-
   <script>
-    const comentarioEl = document.getElementById("comentario1");
-    const urlInput = document.getElementById('urlInput');
-    const iniciarBtn = document.getElementById('iniciarBtn');
-    const statusMsg = document.getElementById('statusMsg');
+  const comentarioEl = document.getElementById("comentario1");
+  const urlInput = document.getElementById('urlInput');
+  const iniciarBtn = document.getElementById('iniciarBtn');
+  const statusMsg = document.getElementById('statusMsg');
 
-    const hashtagsPermitidos = ["#mineros", "#lapoderosa", "Mineros", "#LaPoderosa"];
-    const palabrasProhibidas = [
-      "pendejo", "idiota", "estúpido", "mierda", "puta",
-      "joto", "marica", "culero", "formula59", "minerostv", "odio"
-    ];
+  const hashtagsPermitidos = ["#mineros", "#lapoderosa", "Mineros", "#LaPoderosa"];
+  const palabrasProhibidas = [
+    "pendejo", "idiota", "estúpido", "mierda", "puta",
+    "joto", "marica", "culero", "formula59", "minerostv", "odio"
+  ];
 
-    const mostrados = new Set();
+  const mostrados = new Set();
+  let colaMensajes = [];
 
-    console.log("📡 Dugout Poderoso activo. Esperando mensajes...");
+  function normalizarTexto(texto) {
+    return texto
+      .toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^\w# ]/g, "");
+  }
 
-    function normalizarTexto(texto) {
-      return texto
-        .toLowerCase()
-        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^\w# ]/g, "");
+  function contieneHashtagValido(texto) {
+    return hashtagsPermitidos.some(tag => texto.includes(tag.toLowerCase()));
+  }
+
+  function contieneProhibidas(texto) {
+    return palabrasProhibidas.some(p => texto.includes(p));
+  }
+
+  function resaltarHashtags(texto) {
+    let resultado = texto;
+    hashtagsPermitidos.forEach(tag => {
+      const regex = new RegExp(tag, "gi");
+      resultado = resultado.replace(regex, match => `<span class="hashtag-rojo">${match.toUpperCase()}</span>`);
+    });
+    return resultado;
+  }
+
+  function filtrarMensajes(mensajes) {
+    const nuevos = [];
+    for (const msg of mensajes) {
+      const textoCrudo = msg.message || "";
+      const texto = normalizarTexto(textoCrudo);
+      if (mostrados.has(texto)) continue;
+      if (!contieneHashtagValido(texto)) continue;
+      if (contieneProhibidas(texto)) continue;
+      mostrados.add(texto);
+      nuevos.push(textoCrudo);
+    }
+    return nuevos;
+  }
+
+  async function actualizarMensajes() {
+    console.log("🔄 Solicitando mensajes...");
+
+    try {
+      const res = await fetch("/api/mensajes");
+      if (!res.ok) throw new Error(`Respuesta HTTP ${res.status}`);
+      const data = await res.json();
+      const mensajes = data.mensajes || [];
+
+      console.log(`📥 Recibidos: ${mensajes.length}`);
+      const nuevos = filtrarMensajes(mensajes);
+      console.log("🆕 Nuevos válidos:", nuevos.length);
+      colaMensajes.push(...nuevos);
+
+    } catch (error) {
+      console.error("❌ Error al obtener mensajes:", error);
+      comentarioEl.textContent = "Error al cargar comentarios...";
+    }
+  }
+
+  function mostrarSiguiente() {
+    if (colaMensajes.length > 0) {
+      const mensaje = colaMensajes.shift();
+      comentarioEl.innerHTML = resaltarHashtags(mensaje);
+    } else {
+      comentarioEl.textContent = "Esperando comentario válido...";
+    }
+  }
+
+  iniciarBtn.addEventListener('click', async () => {
+    const url = urlInput.value.trim();
+    if (!url) {
+      statusMsg.textContent = "⚠️ Por favor, ingresa una URL válida.";
+      return;
     }
 
-    function contieneHashtagValido(texto) {
-      return hashtagsPermitidos.some(tag => texto.includes(tag.toLowerCase()));
-    }
+    statusMsg.textContent = "⏳ Iniciando chat...";
 
-    function contieneProhibidas(texto) {
-      return palabrasProhibidas.some(p => texto.includes(p));
-    }
-
-    function resaltarHashtags(texto) {
-      let resultado = texto;
-      hashtagsPermitidos.forEach(tag => {
-        const regex = new RegExp(tag, "gi");
-        resultado = resultado.replace(regex, match => `<span class="hashtag-rojo">${match.toUpperCase()}</span>`);
+    try {
+      const res = await fetch('/api/iniciar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
       });
-      return resultado;
-    }
 
-    function obtenerMensajeValido(mensajes) {
-      for (const msg of mensajes) {
-        const textoCrudo = msg.message || "";
-        const texto = normalizarTexto(textoCrudo);
+      const data = await res.json();
 
-        if (mostrados.has(texto)) {
-          console.log(`⏩ Ignorado (ya mostrado): ${textoCrudo}`);
-          continue;
-        }
-        if (!contieneHashtagValido(texto)) {
-          console.log(`🚫 Sin hashtag permitido: ${textoCrudo}`);
-          continue;
-        }
-        if (contieneProhibidas(texto)) {
-          console.log(`🛑 Contiene palabra prohibida: ${textoCrudo}`);
-          continue;
-        }
-
-        mostrados.add(texto);
-        console.log(`✅ Mostrando: ${textoCrudo}`);
-        return textoCrudo;
-      }
-
-      console.log("🔁 No se encontró mensaje válido, limpiando cache de mostrados.");
-      mostrados.clear();
-      return null;
-    }
-
-    async function actualizarMensajes() {
-      console.log("🔄 Solicitando mensajes...");
-
-      try {
-        const res = await fetch("/api/mensajes");
-        if (!res.ok) throw new Error(`Respuesta HTTP ${res.status}`);
-        const data = await res.json();
-        const mensajes = data.mensajes || [];
-
-        console.log(`📥 Recibidos: ${mensajes.length}`);
-        console.log("📦 Mensajes recibidos del backend:", mensajes);
-
-        const mensajeValido = obtenerMensajeValido(mensajes);
-
-        if (mensajeValido) {
-          comentarioEl.innerHTML = resaltarHashtags(mensajeValido);
-        } else {
-          comentarioEl.textContent = "Esperando comentario válido...";
-        }
-
-      } catch (error) {
-        console.error("❌ Error al obtener mensajes:", error);
-        comentarioEl.textContent = "Error al cargar comentarios...";
-      }
-    }
-
-    iniciarBtn.addEventListener('click', async () => {
-      const url = urlInput.value.trim();
-      if (!url) {
-        statusMsg.textContent = "⚠️ Por favor, ingresa una URL válida.";
+      if (!res.ok) {
+        statusMsg.textContent = `❌ Error: ${data.error || 'No se pudo iniciar el chat'}`;
         return;
       }
 
-      statusMsg.textContent = "⏳ Iniciando chat...";
+      statusMsg.textContent = "✅ Chat iniciado correctamente. Cargando mensajes...";
+      mostrados.clear();
+      colaMensajes = [];
+      comentarioEl.textContent = "Esperando comentario...";
+      actualizarMensajes(); // Primera carga
+    } catch (error) {
+      statusMsg.textContent = "❌ Error al iniciar el chat.";
+      console.error("Error al iniciar chat:", error);
+    }
+  });
 
-      try {
-        const res = await fetch('/api/iniciar', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url })
-        });
+  // Consulta nueva tanda cada minuto
+  setInterval(actualizarMensajes, 60000);
 
-        const data = await res.json();
+  // Muestra un mensaje cada 4 segundos
+  setInterval(mostrarSiguiente, 4000);
+</script>
 
-        if (!res.ok) {
-          statusMsg.textContent = `❌ Error: ${data.error || 'No se pudo iniciar el chat'}`;
-          return;
-        }
-
-        statusMsg.textContent = "✅ Chat iniciado correctamente. Cargando mensajes...";
-        mostrados.clear();
-        comentarioEl.textContent = "Esperando comentario...";
-        actualizarMensajes();
-
-      } catch (error) {
-        statusMsg.textContent = "❌ Error al iniciar el chat.";
-        console.error("Error al iniciar chat:", error);
-      }
-    });
-
-    setInterval(actualizarMensajes, 10000);
-  </script>
 </body>
 </html>
