@@ -94,9 +94,52 @@
 
   const hashtagsPermitidos = ["#mineros", "#lapoderosa", "Mineros", "#LaPoderosa"];
   const palabrasProhibidas = [
-    "pendejo", "idiota", "estúpido", "mierda", "puta",
-    "joto", "marica", "culero", "formula59", "minerostv", "odio"
+    // Insultos clásicos y sus variantes
+    "pendejo", "p3ndej@", "p3nd3jo", "pendej0", "p e n d e j o", "p3ndejo",
+    "idiota", "1diota", "idi0ta", "idi0t@", "i d i o t a",
+    "estúpido", "estupido", "estup1d0", "estup1do", "e s t u p i d o",
+    "mierda", "m13rd@", "mrd@", "m1erda", "m i e r d a",
+    "puta", "put@", "p u t a", "pvt@", "pu7a", "p u t o", "puto", "p u t o", "pvt0",
+    "joto", "j0t0", "j0to", "j o t o",
+    "marica", "m4rica", "m a r i c a",
+    "culero", "kulero", "cul3ro", "c u l e r o", "cvl3r0",
+  
+    // Homofobia/transfobia
+    "maricón", "marik0n", "mar!con", "m a r i c o n",
+    "j maricon", "gay de forma ofensiva", "lgtb odio",
+  
+    // Racismo (añade más según contexto local)
+    "naco", "indio", "prieto", "negro de forma ofensiva",
+  
+    // Términos locales o códigos
+    "formula59", "formul@59", "f0rmula59", "f o r m u l a 59",
+    "minerostv", "miner0stv", "m i n e r o s t v",
+
+    // General hate
+    "odio", "od1o", "o d i o", "asco", "t odio", "muérete", "te odio", "maldito", "perra", "zorra",
+
+    //albures
+    "elver galarga", "elber galarga", "elberga larga", "el berga larga",
+    "elmas capito", "elmascapito", "elmas capado", "elmas culiao",
+    "soila vato", "soila ganso", "soila pinga", "soila verga",
+    "meando soto", "me ando soto", "me ando miando",
+    "melón tacones", "melón es tacones", "melón tacón",
+    "estela diano", "estela dianal", "estela verga",
+    "armando broncas", "armando ortiz", "armando tetas",
+    "roberto palazuelos", "roberto palito", "roberto palo",
+    "beto cueva", "beto verga", "beto nalga",
+    "pancho lópez", "pancho cola", "pancho verga",
+    "jacinto el calambre", "jacinto perez", "jacinto culiao",
+    "pedro nalga", "pedro verga", "pedro picha",
+    "alejandro magno", "alejandro cacas", "alejandro vergas",
+    "cecilio guapo", "cecilio concha", "cecilio grande",
+    "cristian pito", "cristian perez", "cristian culo",
+    "tomás turbio", "tomás verga", "tomás culo",
+    "anacleto ortega", "anacleto culo", "anacleto picha",
+    "luis mión", "luis verga", "luis caca",
+    "lalo vergas", "lalo picha", "lalo nalga"
   ];
+
 
   const mostrados = new Set();
   let colaMensajes = [];
@@ -204,7 +247,12 @@
       statusMsg.textContent = "✅ Chat iniciado correctamente. Cargando mensajes...";
       mostrados.clear();
       colaMensajes = [];
-      comentarioEl.textContent = "Esperando comentario...";
+      comentarioEl.textContent = [
+        "💬  Comenta  #Mineros  o  #LaPoderosa  y  aparece  EN VIVO  🔥",
+        "🎤  ¡Participa ahora!  Escribe  #Mineros  o  #LaPoderosa  🎉  y  sal en pantalla 📺",
+        "⚡️  ¿Listo para brillar?  Comenta  #Mineros  o  #LaPoderosa  y  aparece en vivo 🏟️"
+      ][Math.floor(Math.random() * 3)];
+
       actualizarMensajes(); // Primera carga
     } catch (error) {
       statusMsg.textContent = "❌ Error al iniciar el chat.";
