@@ -98,7 +98,7 @@
     const iniciarBtn = document.getElementById('iniciarBtn');
     const statusMsg = document.getElementById('statusMsg');
 
-    const hashtagsPermitidos = ["#mineros", "#lapoderosa"];
+    const hashtagsPermitidos = ["#mineros", "#lapoderosa","Mineros","#LaPoderosa"];
     const palabrasProhibidas = [
       "pendejo", "idiota", "estúpido", "mierda", "puta",
       "joto", "marica", "culero", "formula59", "minerostv", "odio"
@@ -176,7 +176,7 @@
 
         console.log(`📥 Recibidos: ${mensajes.length}`);
         console.log("📬 Mensajes recibidos del backend:", mensajes);
-        
+
         mensajes.forEach(m => {
           if (!recibidos.has(m.id)) {
             recibidos.set(m.id, m);
