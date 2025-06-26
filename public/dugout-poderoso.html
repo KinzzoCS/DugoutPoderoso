@@ -57,6 +57,12 @@
       color: #dc3545;
       font-weight: bold;
     }
+
+    #comentario1 {
+      font-size: 1.5rem;
+      font-weight: bold;
+      padding: 2rem;
+    }
   </style>
 </head>
 <body>
@@ -73,17 +79,19 @@
     </div>
 
     <!-- Tabla de mensajes -->
-    <table class="table table-bordered tabla-dugout text-center w-100">
+    <table class="table table-bordered tabla-dugout text-center w-100 align-middle">
       <thead>
-        <tr><th>Dugout Poderoso</th></tr>
+        <tr><th class="text-center"><h2>DUGOUT  <span style="color: #dc3545; font-weight: bold;">PODEROSO</span></h2></th></tr>
       </thead>
       <tbody>
         <tr>
-          <td id="comentario1">Esperando comentario...</td>
+          <td id="comentario1" class="text-center align-middle">
+            Esperando comentario...
+          </td>
         </tr>
       </tbody>
     </table>
-  </div>
+
 
   <!-- Bootstrap JS -->
   <script>
@@ -200,7 +208,12 @@
 
     } catch (error) {
       console.error("❌ Error al obtener mensajes:", error);
-      comentarioEl.textContent = "Error al cargar comentarios...";
+      comentarioEl.innerHTML = [
+  '💬  Comenta  <span style="color: #dc3545 !important; font-weight: bold;">#Mineros</span>  o  <span style="color: #dc3545 !important; font-weight: bold;">#LaPoderosa</span>  y  aparece  EN VIVO  🔥',
+  '🎤  ¡Participa ahora!  Escribe  <span style="color: #dc3545 !important; font-weight: bold;">#Mineros</span>  o  <span style="color: #dc3545 !important; font-weight: bold;">#LaPoderosa</span>  🎉  y  sal en pantalla 📺',
+  '⚡️  ¿Listo para brillar?  Comenta  <span style="color: #dc3545 !important; font-weight: bold;">#Mineros</span>  o  <span style="color: #dc3545 !important; font-weight: bold;">#LaPoderosa</span>  y  aparece en vivo 🏟️'
+][Math.floor(Math.random() * 3)];
+
     }
   }
 
@@ -217,7 +230,11 @@
         </div>
       `;
     } else {
-      comentarioEl.textContent = "Esperando comentario válido...";
+      comentarioEl.innerHTML = [
+  '💬  Comenta  <span style="color: #dc3545 !important; font-weight: bold;">#Mineros</span>  o  <span style="color: #dc3545 !important; font-weight: bold;">#LaPoderosa</span>  y  aparece  EN VIVO  🔥',
+  '🎤  ¡Participa ahora!  Escribe  <span style="color: #dc3545 !important; font-weight: bold;">#Mineros</span>  o  <span style="color: #dc3545 !important; font-weight: bold;">#LaPoderosa</span>  🎉  y  sal en pantalla 📺',
+  '⚡️  ¿Listo para brillar?  Comenta  <span style="color: #dc3545 !important; font-weight: bold;">#Mineros</span>  o  <span style="color: #dc3545 !important; font-weight: bold;">#LaPoderosa</span>  y  aparece en vivo 🏟️'
+][Math.floor(Math.random() * 3)];
     }
   }
 
@@ -247,11 +264,11 @@
       statusMsg.textContent = "✅ Chat iniciado correctamente. Cargando mensajes...";
       mostrados.clear();
       colaMensajes = [];
-      comentarioEl.textContent = [
-        "💬  Comenta  #Mineros  o  #LaPoderosa  y  aparece  EN VIVO  🔥",
-        "🎤  ¡Participa ahora!  Escribe  #Mineros  o  #LaPoderosa  🎉  y  sal en pantalla 📺",
-        "⚡️  ¿Listo para brillar?  Comenta  #Mineros  o  #LaPoderosa  y  aparece en vivo 🏟️"
-      ][Math.floor(Math.random() * 3)];
+      comentarioEl.innerHTML = [
+  '💬  Comenta  <span style="color: #dc3545 !important; font-weight: bold;">#Mineros</span>  o  <span style="color: #dc3545 !important; font-weight: bold;">#LaPoderosa</span>  y  aparece  EN VIVO  🔥',
+  '🎤  ¡Participa ahora!  Escribe  <span style="color: #dc3545 !important; font-weight: bold;">#Mineros</span>  o  <span style="color: #dc3545 !important; font-weight: bold;">#LaPoderosa</span>  🎉  y  sal en pantalla 📺',
+  '⚡️  ¿Listo para brillar?  Comenta  <span style="color: #dc3545 !important; font-weight: bold;">#Mineros</span>  o  <span style="color: #dc3545 !important; font-weight: bold;">#LaPoderosa</span>  y  aparece en vivo 🏟️'
+][Math.floor(Math.random() * 3)];
 
       actualizarMensajes(); // Primera carga
     } catch (error) {
