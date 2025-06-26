@@ -88,7 +88,6 @@
   <!-- Bootstrap JS -->
   <script 
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" 
-    integrity="sha384-VgpV2GdWxqMDZ6g4go6TZyRn+q2bpQEb+EXZtAv/6jQFQKQtaV6t24fjDxaIu4xk" 
     crossorigin="anonymous"
   ></script>
 
@@ -98,16 +97,13 @@
     const iniciarBtn = document.getElementById('iniciarBtn');
     const statusMsg = document.getElementById('statusMsg');
 
-    const hashtagsPermitidos = ["#mineros", "#lapoderosa","Mineros","#LaPoderosa"];
+    const hashtagsPermitidos = ["#mineros", "#lapoderosa", "Mineros", "#LaPoderosa"];
     const palabrasProhibidas = [
       "pendejo", "idiota", "estúpido", "mierda", "puta",
       "joto", "marica", "culero", "formula59", "minerostv", "odio"
     ];
 
-    const recibidos = new Map();
     const mostrados = new Set();
-
-    const MAX_MENSAJES = 300;
 
     console.log("📡 Dugout Poderoso activo. Esperando mensajes...");
 
@@ -119,7 +115,7 @@
     }
 
     function contieneHashtagValido(texto) {
-      return hashtagsPermitidos.some(tag => texto.includes(tag));
+      return hashtagsPermitidos.some(tag => texto.includes(tag.toLowerCase()));
     }
 
     function contieneProhibidas(texto) {
@@ -137,7 +133,6 @@
 
     function obtenerMensajeValido(mensajes) {
       for (const msg of mensajes) {
-        const id = msg.id;
         const textoCrudo = msg.message || "";
         const texto = normalizarTexto(textoCrudo);
 
@@ -159,36 +154,36 @@
         return textoCrudo;
       }
 
-      console.log("🔍 No se encontró mensaje válido esta vez.");
+      console.log("🔁 No se encontró mensaje válido, limpiando cache de mostrados.");
+      mostrados.clear();
       return null;
     }
 
     async function actualizarMensajes() {
-  console.log("🔄 Solicitando mensajes...");
+      console.log("🔄 Solicitando mensajes...");
 
-  try {
-    const res = await fetch("/api/mensajes");
-    if (!res.ok) throw new Error(`Respuesta HTTP ${res.status}`);
-    const data = await res.json();
-    const mensajes = data.mensajes || [];
+      try {
+        const res = await fetch("/api/mensajes");
+        if (!res.ok) throw new Error(`Respuesta HTTP ${res.status}`);
+        const data = await res.json();
+        const mensajes = data.mensajes || [];
 
-    console.log(`📥 Recibidos: ${mensajes.length}`);
-    console.log("📦 Mensajes recibidos del backend:", mensajes);
+        console.log(`📥 Recibidos: ${mensajes.length}`);
+        console.log("📦 Mensajes recibidos del backend:", mensajes);
 
-    const mensajeValido = obtenerMensajeValido(mensajes);
+        const mensajeValido = obtenerMensajeValido(mensajes);
 
-    if (mensajeValido) {
-      comentarioEl.innerHTML = resaltarHashtags(mensajeValido);
-    } else {
-      comentarioEl.textContent = "Esperando comentario válido...";
+        if (mensajeValido) {
+          comentarioEl.innerHTML = resaltarHashtags(mensajeValido);
+        } else {
+          comentarioEl.textContent = "Esperando comentario válido...";
+        }
+
+      } catch (error) {
+        console.error("❌ Error al obtener mensajes:", error);
+        comentarioEl.textContent = "Error al cargar comentarios...";
+      }
     }
-
-  } catch (error) {
-    console.error("❌ Error al obtener mensajes:", error);
-    comentarioEl.textContent = "Error al cargar comentarios...";
-  }
-}
-
 
     iniciarBtn.addEventListener('click', async () => {
       const url = urlInput.value.trim();
@@ -214,7 +209,6 @@
         }
 
         statusMsg.textContent = "✅ Chat iniciado correctamente. Cargando mensajes...";
-        recibidos.clear();
         mostrados.clear();
         comentarioEl.textContent = "Esperando comentario...";
         actualizarMensajes();
@@ -225,8 +219,7 @@
       }
     });
 
-    // Actualizamos mensajes cada minuto para mantenerlo fresco
-    setInterval(actualizarMensajes, 60000);
+    setInterval(actualizarMensajes, 10000);
   </script>
 </body>
 </html>
