@@ -12,23 +12,9 @@ const PORT = process.env.PORT || 3000;
 
 let liveChatId = null;
 let nextPageToken = '';
-let mensajes = [];
-let mensajesLeidos = new Set();
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
-
-// 🔁 Evita duplicados al agregar mensajes
-function mergeMessages(oldMessages, newMessages) {
-  const ids = new Set(oldMessages.map(m => m.id));
-  const merged = [...oldMessages];
-  newMessages.forEach(m => {
-    if (!ids.has(m.id)) {
-      merged.push(m);
-    }
-  });
-  return merged;
-}
 
 // 🚀 Ruta para iniciar chat con URL desde frontend
 app.post('/api/iniciar', async (req, res) => {
@@ -54,8 +40,6 @@ app.post('/api/iniciar', async (req, res) => {
 
     liveChatId = chatId;
     nextPageToken = '';
-    mensajes = [];
-    mensajesLeidos = new Set();
 
     console.log("✅ [API] Chat iniciado correctamente.");
     res.json({ message: 'Chat iniciado correctamente.' });
@@ -82,11 +66,12 @@ app.get('/api/mensajes', async (req, res) => {
       return res.status(500).json({ error: 'Error al obtener mensajes' });
     }
 
-    console.log("📨 [API] Mensajes recibidos:", data.messages.length);
     nextPageToken = data.nextPageToken;
-    mensajes = mergeMessages(mensajes, data.messages);
+    console.log("📨 [API] Mensajes recibidos:", data.messages.length);
 
-    res.json({ mensajes });
+    // ✅ Enviar directamente los nuevos mensajes (sin acumulación)
+    res.json({ mensajes: data.messages });
+
   } catch (err) {
     console.error("❌ [API] Error interno en /api/mensajes:", err);
     res.status(500).json({ error: 'Error interno del servidor' });
