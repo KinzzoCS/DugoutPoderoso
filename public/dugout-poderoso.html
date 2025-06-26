@@ -129,12 +129,14 @@
     const nuevos = [];
     for (const msg of mensajes) {
       const textoCrudo = msg.message || "";
+      const autor = msg.author || "Anónimo";
+      const foto = msg.authorImage || "";
       const texto = normalizarTexto(textoCrudo);
       if (mostrados.has(texto)) continue;
       if (!contieneHashtagValido(texto)) continue;
       if (contieneProhibidas(texto)) continue;
       mostrados.add(texto);
-      nuevos.push(textoCrudo);
+      nuevos.push({ texto: textoCrudo, autor, foto });
     }
     return nuevos;
   }
@@ -161,8 +163,16 @@
 
   function mostrarSiguiente() {
     if (colaMensajes.length > 0) {
-      const mensaje = colaMensajes.shift();
-      comentarioEl.innerHTML = resaltarHashtags(mensaje);
+      const { texto, autor, foto } = colaMensajes.shift();
+      comentarioEl.innerHTML = `
+        <div class="d-flex align-items-center gap-3">
+          <img src="${foto}" alt="Foto de ${autor}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border: 2px solid #dc3545;">
+          <div>
+            <div class="fw-bold">${resaltarHashtags(texto)}</div>
+            <div class="text-white-50 small mt-1">– ${autor}</div>
+          </div>
+        </div>
+      `;
     } else {
       comentarioEl.textContent = "Esperando comentario válido...";
     }
@@ -208,6 +218,7 @@
   // Muestra un mensaje cada 4 segundos
   setInterval(mostrarSiguiente, 4000);
 </script>
+
 
 </body>
 </html>

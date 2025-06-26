@@ -39,10 +39,12 @@ async function getLiveChatMessages(liveChatId, pageToken = '') {
     });
 
     const messages = response.data.items.map(item => ({
-      author: item.authorDetails.displayName,
-      message: item.snippet.displayMessage,
-      publishedAt: item.snippet.publishedAt
-    }));
+  author: item.authorDetails.displayName,
+  authorImage: item.authorDetails.profileImageUrl,  // <-- Aquí
+  message: item.snippet.displayMessage,
+  publishedAt: item.snippet.publishedAt
+}));
+
 
     return {
       messages,
