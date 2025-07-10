@@ -5,11 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Dugout Poderoso</title>
 
-  <!-- Bootstrap CSS -->
   <link 
     href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" 
     rel="stylesheet" 
-    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" 
     crossorigin="anonymous"
   />
 
@@ -62,65 +60,23 @@
       font-size: 1.5rem;
       font-weight: bold;
       padding: 2rem;
+      transition: background-color 0.4s ease, color 0.4s ease;
     }
-    /* Animaciones */
 
-    .mensaje-transicion {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .mensaje-transicion::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: white;
-    border-radius: 0 50% 50% 0;
-    animation: barrido 0.8s ease forwards;
-    z-index: 1;
-  }
-
-  @keyframes barrido {
-    to {
-      left: 100%;
+    #comentario1.estado-espera {
+      background-color: #212529;
+      color: #f8f9fa;
     }
-  }
 
-  .mensaje-transicion .contenido-mensaje {
-    position: relative;
-    z-index: 2;
-    color: #1e1e1e;
-    transition: color 0.3s ease;
-  }
-
-  .mensaje-transicion .hashtag-rojo {
-    color: #dc3545 !important;
-  }
-
-  .comentario-animado {
-  animation: cambioFondo 0.8s forwards;
-}
-
-@keyframes cambioFondo {
-  0% {
-    background-color: #ffffff;
-    color: #1e1e1e;
-  }
-  100% {
-    background-color: #212529;
-    color: #f8f9fa;
-  }
-}
-
+    #comentario1.estado-activo {
+      background-color: #ffffff;
+      color: #1e1e1e;
+    }
   </style>
 </head>
 <body>
   <div class="container d-flex flex-column justify-content-center align-items-center contenedor-central" style="max-width: 800px;">
 
-    <!-- Input y botón para iniciar chat -->
     <div class="mb-4 w-100">
       <label for="urlInput" class="form-label text-white fw-bold">Pega la URL del directo de YouTube:</label>
       <div class="input-group">
@@ -130,23 +86,20 @@
       <div id="statusMsg" class="mt-2 text-white"></div>
     </div>
 
-    <!-- Tabla de mensajes -->
     <table class="table table-bordered tabla-dugout text-center w-100 align-middle">
       <thead>
         <tr><th class="text-center"><h2>DUGOUT  <span style="color: #dc3545; font-weight: bold;">PODEROSO</span></h2></th></tr>
       </thead>
       <tbody>
         <tr>
-          <td id="comentario1" class="text-center align-middle">
+          <td id="comentario1" class="text-center align-middle estado-espera">
             Esperando comentario...
           </td>
         </tr>
       </tbody>
     </table>
 
-
-  <!-- Bootstrap JS -->
-  <script>
+<script>
   const comentarioEl = document.getElementById("comentario1");
   const urlInput = document.getElementById('urlInput');
   const iniciarBtn = document.getElementById('iniciarBtn');
@@ -200,13 +153,11 @@
     "lalo vergas", "lalo picha", "lalo nalga"
   ];
 
-
   const mostrados = new Set();
   let colaMensajes = [];
 
   function normalizarTexto(texto) {
-    return texto
-      .toLowerCase()
+    return texto.toLowerCase()
       .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
       .replace(/[^\w# ]/g, "");
   }
@@ -245,64 +196,54 @@
   }
 
   async function actualizarMensajes() {
-    console.log("🔄 Solicitando mensajes...");
-
     try {
       const res = await fetch("/api/mensajes");
-      if (!res.ok) throw new Error(`Respuesta HTTP ${res.status}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      const mensajes = data.mensajes || [];
-
-      console.log(`📥 Recibidos: ${mensajes.length}`);
-      const nuevos = filtrarMensajes(mensajes);
-      console.log("🆕 Nuevos válidos:", nuevos.length);
+      const nuevos = filtrarMensajes(data.mensajes || []);
       colaMensajes.push(...nuevos);
-
     } catch (error) {
-      console.error("❌ Error al obtener mensajes:", error);
-      comentarioEl.innerHTML = [
-  '💬  Comenta  <span style="color: #dc3545 !important; font-weight: bold;">#Mineros</span>  o  <span style="color: #dc3545 !important; font-weight: bold;">#LaPoderosa</span>  y  aparece  EN VIVO  🔥',
-  '🎤  ¡Participa ahora!  Escribe  <span style="color: #dc3545 !important; font-weight: bold;">#Mineros</span>  o  <span style="color: #dc3545 !important; font-weight: bold;">#LaPoderosa</span>  🎉  y  sal en pantalla 📺',
-  '⚡️  ¿Listo para brillar?  Comenta  <span style="color: #dc3545 !important; font-weight: bold;">#Mineros</span>  o  <span style="color: #dc3545 !important; font-weight: bold;">#LaPoderosa</span>  y  aparece en vivo 🏟️'
-][Math.floor(Math.random() * 3)];
-
+      comentarioEl.classList.remove("estado-activo");
+      comentarioEl.classList.add("estado-espera");
+      comentarioEl.innerHTML = obtenerMensajeEspera();
     }
   }
 
+  function obtenerMensajeEspera() {
+    const mensajes = [
+      '💬  Comenta  <span style="color: #dc3545;">#Mineros</span>  o  <span style="color: #dc3545;">#LaPoderosa</span>  y aparece EN VIVO 🔥',
+      '🎤  ¡Participa ahora! Escribe <span style="color: #dc3545;">#Mineros</span> o <span style="color: #dc3545;">#LaPoderosa</span> 🎉 y sal en pantalla 📺',
+      '⚡️  ¿Listo para brillar? Comenta <span style="color: #dc3545;">#Mineros</span> o <span style="color: #dc3545;">#LaPoderosa</span> y aparece en vivo 🏟️'
+    ];
+    return mensajes[Math.floor(Math.random() * mensajes.length)];
+  }
+
   function mostrarSiguiente() {
-  comentarioEl.classList.remove("comentario-animado"); // limpia primero
+    if (colaMensajes.length > 0) {
+      const { texto, autor, foto } = colaMensajes.shift();
+      comentarioEl.classList.remove("estado-espera");
+      comentarioEl.classList.add("estado-activo");
 
-  void comentarioEl.offsetWidth; // "trick" para reiniciar animación
-
-  comentarioEl.classList.add("comentario-animado");
-
-  if (colaMensajes.length > 0) {
-    const { texto, autor, foto } = colaMensajes.shift();
-    comentarioEl.innerHTML = `
-      <div class="mensaje-transicion">
-        <div class="contenido-mensaje d-flex align-items-center gap-3">
+      comentarioEl.innerHTML = `
+        <div class="d-flex align-items-center gap-3">
           <img src="${foto}" alt="Foto de ${autor}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border: 2px solid #dc3545;">
           <div>
             <div class="fw-bold">${resaltarHashtags(texto)}</div>
             <div class="text-muted small mt-1">– ${autor}</div>
           </div>
         </div>
-      </div>
-    `;
-  } else {
-    comentarioEl.innerHTML = [
-      '💬  Comenta  <span style="color: #dc3545 !important; font-weight: bold;">#Mineros</span>  o  <span style="color: #dc3545 !important; font-weight: bold;">#LaPoderosa</span>  y  aparece  EN VIVO  🔥',
-      '🎤  ¡Participa ahora!  Escribe  <span style="color: #dc3545 !important; font-weight: bold;">#Mineros</span>  o  <span style="color: #dc3545 !important; font-weight: bold;">#LaPoderosa</span>  🎉  y  sal en pantalla 📺',
-      '⚡️  ¿Listo para brillar?  Comenta  <span style="color: #dc3545 !important; font-weight: bold;">#Mineros</span>  o  <span style="color: #dc3545 !important; font-weight: bold;">#LaPoderosa</span>  y  aparece en vivo 🏟️'
-    ][Math.floor(Math.random() * 3)];
+      `;
+    } else {
+      comentarioEl.classList.remove("estado-activo");
+      comentarioEl.classList.add("estado-espera");
+      comentarioEl.innerHTML = obtenerMensajeEspera();
+    }
   }
-}
-
 
   iniciarBtn.addEventListener('click', async () => {
     const url = urlInput.value.trim();
     if (!url) {
-      statusMsg.textContent = "⚠️ Por favor, ingresa una URL válida.";
+      statusMsg.textContent = "⚠️ Ingresa una URL válida.";
       return;
     }
 
@@ -316,35 +257,27 @@
       });
 
       const data = await res.json();
-
       if (!res.ok) {
-        statusMsg.textContent = `❌ Error: ${data.error || 'No se pudo iniciar el chat'}`;
+        statusMsg.textContent = `❌ Error: ${data.error || 'No se pudo iniciar'}`;
         return;
       }
 
-      statusMsg.textContent = "✅ Chat iniciado correctamente. Cargando mensajes...";
+      statusMsg.textContent = "✅ Chat iniciado correctamente.";
       mostrados.clear();
       colaMensajes = [];
-      comentarioEl.innerHTML = [
-  '💬  Comenta  <span style="color: #dc3545 !important; font-weight: bold;">#Mineros</span>  o  <span style="color: #dc3545 !important; font-weight: bold;">#LaPoderosa</span>  y  aparece  EN VIVO  🔥',
-  '🎤  ¡Participa ahora!  Escribe  <span style="color: #dc3545 !important; font-weight: bold;">#Mineros</span>  o  <span style="color: #dc3545 !important; font-weight: bold;">#LaPoderosa</span>  🎉  y  sal en pantalla 📺',
-  '⚡️  ¿Listo para brillar?  Comenta  <span style="color: #dc3545 !important; font-weight: bold;">#Mineros</span>  o  <span style="color: #dc3545 !important; font-weight: bold;">#LaPoderosa</span>  y  aparece en vivo 🏟️'
-][Math.floor(Math.random() * 3)];
+      comentarioEl.classList.remove("estado-activo");
+      comentarioEl.classList.add("estado-espera");
+      comentarioEl.innerHTML = obtenerMensajeEspera();
 
-      actualizarMensajes(); // Primera carga
+      actualizarMensajes();
     } catch (error) {
       statusMsg.textContent = "❌ Error al iniciar el chat.";
-      console.error("Error al iniciar chat:", error);
     }
   });
 
-  // Consulta nueva tanda cada minuto
   setInterval(actualizarMensajes, 60000);
-
-  // Muestra un mensaje cada 4 segundos
   setInterval(mostrarSiguiente, 4000);
 </script>
-
 
 </body>
 </html>
