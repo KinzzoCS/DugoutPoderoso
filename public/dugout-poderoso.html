@@ -77,15 +77,6 @@
 <body>
   <div class="container d-flex flex-column justify-content-center align-items-center contenedor-central" style="max-width: 800px;">
 
-    <div class="mb-4 w-100">
-      <label for="urlInput" class="form-label text-white fw-bold">Pega la URL del directo de YouTube:</label>
-      <div class="input-group">
-        <input type="url" class="form-control" id="urlInput" placeholder="https://www.youtube.com/watch?v=..." />
-        <button id="iniciarBtn" class="btn btn-danger">Iniciar Chat</button>
-      </div>
-      <div id="statusMsg" class="mt-2 text-white"></div>
-    </div>
-
     <table class="table table-bordered tabla-dugout text-center w-100 align-middle">
       <thead>
         <tr><th class="text-center"><h2>DUGOUT  <span style="color: #dc3545; font-weight: bold;">PODEROSO</span></h2></th></tr>
@@ -98,6 +89,25 @@
         </tr>
       </tbody>
     </table>
+
+    <div class="mb-4 w-100">
+      <label for="urlInput" class="form-label text-white fw-bold">Pega la URL del directo de YouTube:</label>
+      <div class="input-group">
+        <input type="url" class="form-control" id="urlInput" placeholder="https://www.youtube.com/watch?v=..." />
+        <button id="iniciarBtn" class="btn btn-danger">Iniciar Chat</button>
+      </div>
+      <div id="statusMsg" class="mt-2 text-white"></div>
+    
+    <!-- Comentario manual -->
+    <div class="mb-4 w-100">
+      <label for="comentarioManual" class="form-label text-white fw-bold">Pega un comentario de Facebook:</label>
+      <textarea id="comentarioManual" class="form-control" rows="3" placeholder="Ejemplo:
+      Nombre Apellido
+      Comentario aquí..."></textarea>
+      <button id="agregarManualBtn" class="btn btn-primary mt-2">Agregar manualmente</button>
+    </div>
+  </div>
+
 
 <script>
   const comentarioEl = document.getElementById("comentario1");
@@ -277,6 +287,39 @@
 
   setInterval(actualizarMensajes, 60000);
   setInterval(mostrarSiguiente, 8000);
+  const agregarManualBtn = document.getElementById("agregarManualBtn");
+const comentarioManual = document.getElementById("comentarioManual");
+
+agregarManualBtn.addEventListener("click", () => {
+  const textoCompleto = comentarioManual.value.trim();
+
+  if (!textoCompleto) return;
+
+  const lineas = textoCompleto.split("\n");
+  const autor = lineas[0]?.trim() || "Anónimo";
+  const contenido = lineas.slice(1).join(" ").trim();
+
+  if (!contenido) return;
+
+  const textoNormalizado = normalizarTexto(contenido);
+  if (!contieneHashtagValido(textoNormalizado) || contieneProhibidas(textoNormalizado)) {
+    alert("⚠️ El comentario no contiene hashtag válido o incluye palabras no permitidas.");
+    return;
+  }
+
+  // Evita duplicados
+  if (mostrados.has(textoNormalizado)) return;
+  mostrados.add(textoNormalizado);
+
+  colaMensajes.push({
+    texto: contenido,
+    autor,
+    foto: "https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" // Ícono oficial de FB
+  });
+
+  comentarioManual.value = ""; // Limpia textarea
+});
+
 </script>
 
 </body>
