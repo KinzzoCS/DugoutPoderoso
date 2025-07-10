@@ -1,15 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Dugout Poderoso</title>
 
-  <link 
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" 
-    rel="stylesheet" 
-    crossorigin="anonymous"
-  />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    crossorigin="anonymous" />
 
   <style>
     body {
@@ -74,12 +72,18 @@
     }
   </style>
 </head>
+
 <body>
-  <div class="container d-flex flex-column justify-content-center align-items-center contenedor-central" style="max-width: 800px;">
+  <div class="container d-flex flex-column justify-content-center align-items-center contenedor-central"
+    style="max-width: 800px;">
 
     <table class="table table-bordered tabla-dugout text-center w-100 align-middle">
       <thead>
-        <tr><th class="text-center"><h2>DUGOUT  <span style="color: #dc3545; font-weight: bold;">PODEROSO</span></h2></th></tr>
+        <tr>
+          <th class="text-center">
+            <h2>DUGOUT <span style="color: #dc3545; font-weight: bold;">PODEROSO</span></h2>
+          </th>
+        </tr>
       </thead>
       <tbody>
         <tr>
@@ -97,144 +101,160 @@
         <button id="iniciarBtn" class="btn btn-danger">Iniciar Chat</button>
       </div>
       <div id="statusMsg" class="mt-2 text-white"></div>
-    
-    <!-- Comentario manual -->
-    <div class="mb-4 w-100">
-      <label for="comentarioManual" class="form-label text-white fw-bold">Pega un comentario de Facebook:</label>
-      <textarea id="comentarioManual" class="form-control" rows="3" placeholder="Ejemplo:
+
+      <!-- Comentario manual -->
+      <div class="mb-4 w-100">
+        <label for="comentarioManual" class="form-label text-white fw-bold">Pega un comentario de Facebook:</label>
+        <textarea id="comentarioManual" class="form-control" rows="3" placeholder="Ejemplo:
       Nombre Apellido
       Comentario aquí..."></textarea>
-      <button id="agregarManualBtn" class="btn btn-primary mt-2">Agregar manualmente</button>
+        <button id="agregarManualBtn" class="btn btn-primary mt-2">Agregar manualmente</button>
+      </div>
     </div>
-  </div>
 
 
-<script>
-  const comentarioEl = document.getElementById("comentario1");
-  const urlInput = document.getElementById('urlInput');
-  const iniciarBtn = document.getElementById('iniciarBtn');
-  const statusMsg = document.getElementById('statusMsg');
+    <script>
+      const comentarioEl = document.getElementById("comentario1");
+      const urlInput = document.getElementById('urlInput');
+      const iniciarBtn = document.getElementById('iniciarBtn');
+      const statusMsg = document.getElementById('statusMsg');
 
-  const hashtagsPermitidos = ["#mineros", "#lapoderosa", "Mineros", "#LaPoderosa"];
-  const palabrasProhibidas = [
-    // Insultos clásicos y sus variantes
-    "pendejo", "p3ndej@", "p3nd3jo", "pendej0", "p e n d e j o", "p3ndejo",
-    "idiota", "1diota", "idi0ta", "idi0t@", "i d i o t a",
-    "estúpido", "estupido", "estup1d0", "estup1do", "e s t u p i d o",
-    "mierda", "m13rd@", "mrd@", "m1erda", "m i e r d a",
-    "puta", "put@", "p u t a", "pvt@", "pu7a", "p u t o", "puto", "p u t o", "pvt0",
-    "joto", "j0t0", "j0to", "j o t o",
-    "marica", "m4rica", "m a r i c a",
-    "culero", "kulero", "cul3ro", "c u l e r o", "cvl3r0",
-  
-    // Homofobia/transfobia
-    "maricón", "marik0n", "mar!con", "m a r i c o n",
-    "j maricon", "gay de forma ofensiva", "lgtb odio",
-  
-    // Racismo (añade más según contexto local)
-    "naco", "indio", "prieto", "negro de forma ofensiva",
-  
-    // Términos locales o códigos
-    "formula59", "formul@59", "f0rmula59", "f o r m u l a 59",
-    "minerostv", "miner0stv", "m i n e r o s t v",
+      const hashtagsPermitidos = ["#mineros", "#lapoderosa", "Mineros", "#LaPoderosa", "#LAPODEROSA", "#MINEROS", "#MICRONISTAFAVORITO", "#DEPORTESLAPODEROSA", "#DeportesLaPoderosa", "deproteslapoderosa"];
+      const palabrasProhibidas = [
+        // Insultos clásicos y variantes censuradas
+        "pendejo", "p3ndej@", "p3nd3jo", "pendej0", "p e n d e j o", "p3ndejo",
+        "idiota", "1diota", "idi0ta", "idi0t@", "i d i o t a",
+        "estúpido", "estupido", "estup1d0", "estup1do", "e s t u p i d o",
+        "mierda", "m13rd@", "mrd@", "m1erda", "m i e r d a",
+        "puta", "put@", "p u t a", "pvt@", "pu7a",
+        "puto", "p u t o", "pvt0",
+        "joto", "j0t0", "j0to", "j o t o",
+        "marica", "m4rica", "m a r i c a",
+        "culero", "kulero", "cul3ro", "c u l e r o", "cvl3r0",
 
-    // General hate
-    "odio", "od1o", "o d i o", "asco", "t odio", "muérete", "te odio", "maldito", "perra", "zorra",
+        // Homofobia/transfobia
+        "maricón", "marik0n", "mar!con", "m a r i c o n",
+        "j maricon", "lgtb odio",
 
-    //albures
-    "elver galarga", "elber galarga", "elberga larga", "el berga larga",
-    "elmas capito", "elmascapito", "elmas capado", "elmas culiao",
-    "soila vato", "soila ganso", "soila pinga", "soila verga",
-    "meando soto", "me ando soto", "me ando miando",
-    "melón tacones", "melón es tacones", "melón tacón",
-    "estela diano", "estela dianal", "estela verga",
-    "armando broncas", "armando ortiz", "armando tetas",
-    "roberto palazuelos", "roberto palito", "roberto palo",
-    "beto cueva", "beto verga", "beto nalga",
-    "pancho lópez", "pancho cola", "pancho verga",
-    "jacinto el calambre", "jacinto perez", "jacinto culiao",
-    "pedro nalga", "pedro verga", "pedro picha",
-    "alejandro magno", "alejandro cacas", "alejandro vergas",
-    "cecilio guapo", "cecilio concha", "cecilio grande",
-    "cristian pito", "cristian perez", "cristian culo",
-    "tomás turbio", "tomás verga", "tomás culo",
-    "anacleto ortega", "anacleto culo", "anacleto picha",
-    "luis mión", "luis verga", "luis caca",
-    "lalo vergas", "lalo picha", "lalo nalga"
-  ];
+        // Racismo / discriminación
+        "naco", "indio", "prieto", "negro de forma ofensiva",
 
-  const mostrados = new Set();
-  let colaMensajes = [];
+        // Odio generalizado
+        "odio", "od1o", "o d i o", "asco", "muérete", "te odio", "maldito",
+        "perra", "zorra", "imbécil", "imbecil", "i m b e c i l",
 
-  function normalizarTexto(texto) {
-    return texto.toLowerCase()
-      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^\w# ]/g, "");
-  }
+        // Palabras con doble sentido y albures
+        "elver galarga", "elber galarga", "elberga larga", "el berga larga",
+        "elmas capito", "elmascapito", "elmas capado", "elmas culiao",
+        "soila vato", "soila ganso", "soila pinga", "soila verga",
+        "meando soto", "me ando soto", "me ando miando",
+        "melón tacones", "melón es tacones", "melón tacón",
+        "estela diano", "estela dianal", "estela verga",
+        "armando broncas", "armando ortiz", "armando tetas",
+        "roberto palazuelos", "roberto palito", "roberto palo",
+        "beto cueva", "beto verga", "beto nalga",
+        "pancho lópez", "pancho cola", "pancho verga",
+        "jacinto el calambre", "jacinto perez", "jacinto culiao",
+        "pedro nalga", "pedro verga", "pedro picha",
+        "alejandro magno", "alejandro cacas", "alejandro vergas",
+        "cecilio guapo", "cecilio concha", "cecilio grande",
+        "cristian pito", "cristian culo",
+        "tomás turbio", "tomás verga", "tomás culo",
+        "anacleto ortega", "anacleto culo", "anacleto picha",
+        "luis mión", "luis verga", "luis caca",
+        "lalo vergas", "lalo picha", "lalo nalga",
 
-  function contieneHashtagValido(texto) {
-    return hashtagsPermitidos.some(tag => texto.includes(tag.toLowerCase()));
-  }
+        // Códigos y claves locales
+        "formula59", "formul@59", "f0rmula59", "f o r m u l a 59",
+        "minerostv", "miner0stv", "m i n e r o s t v",
 
-  function contieneProhibidas(texto) {
-    return palabrasProhibidas.some(p => texto.includes(p));
-  }
+        // Frases críticas dirigidas a figuras del staff o institución (filtrado contextual)
+        "pésimo trabajo del coach", "mal trabajo del coach", "el coach no sabe",
+        "culpa del coach", "inútil el coach", "el coach es un idiota",
+        "malísima estrategia del coach", "el coach no sirve",
+        "pésima decisión del coach", "el coach la cagó",
+        "el coach arruinó el juego", "gracias coach por perder",
+        "la regó el coach", "otra vez el coach echando a perder",
+        "pobrenato inútil", "el pobrenato arruinó todo", "gracias pobrenato por nada",
+        "el patronato apesta", "mal el patronato otra vez",
+        "javy loya no sirve", "culpa de javy loya", "el ruso polanco es un inútil",
+        "el ruso se la vive cagando", "otra vez polanco fallando",
+        "fuera el patronato", "fuera javy loya", "fuera el ruso",
+        "el directivo no hace nada", "el presidente solo estorba"
+      ];
 
-  function resaltarHashtags(texto) {
-    let resultado = texto;
-    hashtagsPermitidos.forEach(tag => {
-      const regex = new RegExp(tag, "gi");
-      resultado = resultado.replace(regex, match => `<span class="hashtag-rojo">${match.toUpperCase()}</span>`);
-    });
-    return resultado;
-  }
+      const mostrados = new Set();
+      let colaMensajes = [];
 
-  function filtrarMensajes(mensajes) {
-    const nuevos = [];
-    for (const msg of mensajes) {
-      const textoCrudo = msg.message || "";
-      const autor = msg.author || "Anónimo";
-      const foto = msg.authorImage || "";
-      const texto = normalizarTexto(textoCrudo);
-      if (mostrados.has(texto)) continue;
-      if (!contieneHashtagValido(texto)) continue;
-      if (contieneProhibidas(texto)) continue;
-      mostrados.add(texto);
-      nuevos.push({ texto: textoCrudo, autor, foto });
-    }
-    return nuevos;
-  }
+      function normalizarTexto(texto) {
+        return texto.toLowerCase()
+          .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^\w# ]/g, "");
+      }
 
-  async function actualizarMensajes() {
-    try {
-      const res = await fetch("/api/mensajes");
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      const nuevos = filtrarMensajes(data.mensajes || []);
-      colaMensajes.push(...nuevos);
-    } catch (error) {
-      comentarioEl.classList.remove("estado-activo");
-      comentarioEl.classList.add("estado-espera");
-      comentarioEl.innerHTML = obtenerMensajeEspera();
-    }
-  }
+      function contieneHashtagValido(texto) {
+        return hashtagsPermitidos.some(tag => texto.includes(tag.toLowerCase()));
+      }
 
-  function obtenerMensajeEspera() {
-    const mensajes = [
-      '💬  Comenta  <span style="color: #dc3545;">#Mineros</span>  o  <span style="color: #dc3545;">#LaPoderosa</span>  y aparece EN VIVO 🔥',
-      '🎤  ¡Participa ahora! Escribe <span style="color: #dc3545;">#Mineros</span> o <span style="color: #dc3545;">#LaPoderosa</span> 🎉 y sal en pantalla 📺',
-      '⚡️  ¿Listo para brillar? Comenta <span style="color: #dc3545;">#Mineros</span> o <span style="color: #dc3545;">#LaPoderosa</span> y aparece en vivo 🏟️'
-    ];
-    return mensajes[Math.floor(Math.random() * mensajes.length)];
-  }
+      function contieneProhibidas(texto) {
+        return palabrasProhibidas.some(p => texto.includes(p));
+      }
 
-  function mostrarSiguiente() {
-    if (colaMensajes.length > 0) {
-      const { texto, autor, foto } = colaMensajes.shift();
-      comentarioEl.classList.remove("estado-espera");
-      comentarioEl.classList.add("estado-activo");
+      function resaltarHashtags(texto) {
+        let resultado = texto;
+        hashtagsPermitidos.forEach(tag => {
+          const regex = new RegExp(tag, "gi");
+          resultado = resultado.replace(regex, match => `<span class="hashtag-rojo">${match.toUpperCase()}</span>`);
+        });
+        return resultado;
+      }
 
-      comentarioEl.innerHTML = `
+      function filtrarMensajes(mensajes) {
+        const nuevos = [];
+        for (const msg of mensajes) {
+          const textoCrudo = msg.message || "";
+          const autor = msg.author || "Anónimo";
+          const foto = msg.authorImage || "";
+          const texto = normalizarTexto(textoCrudo);
+          if (mostrados.has(texto)) continue;
+          if (!contieneHashtagValido(texto)) continue;
+          if (contieneProhibidas(texto)) continue;
+          mostrados.add(texto);
+          nuevos.push({ texto: textoCrudo, autor, foto });
+        }
+        return nuevos;
+      }
+
+      async function actualizarMensajes() {
+        try {
+          const res = await fetch("/api/mensajes");
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json();
+          const nuevos = filtrarMensajes(data.mensajes || []);
+          colaMensajes.push(...nuevos);
+        } catch (error) {
+          comentarioEl.classList.remove("estado-activo");
+          comentarioEl.classList.add("estado-espera");
+          comentarioEl.innerHTML = obtenerMensajeEspera();
+        }
+      }
+
+      function obtenerMensajeEspera() {
+        const mensajes = [
+          '💬  Comenta  <span style="color: #dc3545;">#Mineros</span>  o  <span style="color: #dc3545;">#LaPoderosa</span>  y aparece EN VIVO 🔥',
+          '🎤  ¡Participa ahora! Escribe <span style="color: #dc3545;">#Mineros</span> o <span style="color: #dc3545;">#LaPoderosa</span> 🎉 y sal en pantalla 📺',
+          '⚡️  ¿Listo para brillar? Comenta <span style="color: #dc3545;">#Mineros</span> o <span style="color: #dc3545;">#LaPoderosa</span> y aparece en vivo 🏟️'
+        ];
+        return mensajes[Math.floor(Math.random() * mensajes.length)];
+      }
+
+      function mostrarSiguiente() {
+        if (colaMensajes.length > 0) {
+          const { texto, autor, foto } = colaMensajes.shift();
+          comentarioEl.classList.remove("estado-espera");
+          comentarioEl.classList.add("estado-activo");
+
+          comentarioEl.innerHTML = `
         <div class="d-flex align-items-center gap-3">
           <img src="${foto}" alt="Foto de ${autor}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border: 2px solid #dc3545;">
           <div>
@@ -243,83 +263,84 @@
           </div>
         </div>
       `;
-    } else {
-      comentarioEl.classList.remove("estado-activo");
-      comentarioEl.classList.add("estado-espera");
-      comentarioEl.innerHTML = obtenerMensajeEspera();
-    }
-  }
-
-  iniciarBtn.addEventListener('click', async () => {
-    const url = urlInput.value.trim();
-    if (!url) {
-      statusMsg.textContent = "⚠️ Ingresa una URL válida.";
-      return;
-    }
-
-    statusMsg.textContent = "⏳ Iniciando chat...";
-
-    try {
-      const res = await fetch('/api/iniciar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url })
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        statusMsg.textContent = `❌ Error: ${data.error || 'No se pudo iniciar'}`;
-        return;
+        } else {
+          comentarioEl.classList.remove("estado-activo");
+          comentarioEl.classList.add("estado-espera");
+          comentarioEl.innerHTML = obtenerMensajeEspera();
+        }
       }
 
-      statusMsg.textContent = "✅ Chat iniciado correctamente.";
-      mostrados.clear();
-      colaMensajes = [];
-      comentarioEl.classList.remove("estado-activo");
-      comentarioEl.classList.add("estado-espera");
-      comentarioEl.innerHTML = obtenerMensajeEspera();
+      iniciarBtn.addEventListener('click', async () => {
+        const url = urlInput.value.trim();
+        if (!url) {
+          statusMsg.textContent = "⚠️ Ingresa una URL válida.";
+          return;
+        }
 
-      actualizarMensajes();
-    } catch (error) {
-      statusMsg.textContent = "❌ Error al iniciar el chat.";
-    }
-  });
+        statusMsg.textContent = "⏳ Iniciando chat...";
 
-  setInterval(actualizarMensajes, 60000);
-  setInterval(mostrarSiguiente, 8000);
-  const agregarManualBtn = document.getElementById("agregarManualBtn");
-const comentarioManual = document.getElementById("comentarioManual");
+        try {
+          const res = await fetch('/api/iniciar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url })
+          });
 
-agregarManualBtn.addEventListener("click", () => {
-  const textoCompleto = comentarioManual.value.trim();
+          const data = await res.json();
+          if (!res.ok) {
+            statusMsg.textContent = `❌ Error: ${data.error || 'No se pudo iniciar'}`;
+            return;
+          }
 
-  if (!textoCompleto) return;
+          statusMsg.textContent = "✅ Chat iniciado correctamente.";
+          mostrados.clear();
+          colaMensajes = [];
+          comentarioEl.classList.remove("estado-activo");
+          comentarioEl.classList.add("estado-espera");
+          comentarioEl.innerHTML = obtenerMensajeEspera();
 
-  const lineas = textoCompleto.split("\n");
-  const autor = lineas[0]?.trim() || "Anónimo";
-  const contenido = lineas.slice(1).join(" ").trim();
+          actualizarMensajes();
+        } catch (error) {
+          statusMsg.textContent = "❌ Error al iniciar el chat.";
+        }
+      });
 
-  if (!contenido) return;
+      setInterval(actualizarMensajes, 60000);
+      setInterval(mostrarSiguiente, 8000);
+      const agregarManualBtn = document.getElementById("agregarManualBtn");
+      const comentarioManual = document.getElementById("comentarioManual");
 
-  const textoNormalizado = normalizarTexto(contenido);
-  if (!contieneHashtagValido(textoNormalizado) || contieneProhibidas(textoNormalizado)) {
-    return;
-  }
+      agregarManualBtn.addEventListener("click", () => {
+        const textoCompleto = comentarioManual.value.trim();
 
-  // Evita duplicados
-  if (mostrados.has(textoNormalizado)) return;
-  mostrados.add(textoNormalizado);
+        if (!textoCompleto) return;
 
-  colaMensajes.push({
-    texto: contenido,
-    autor,
-    foto: "https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" // Ícono oficial de FB
-  });
+        const lineas = textoCompleto.split("\n");
+        const autor = lineas[0]?.trim() || "Anónimo";
+        const contenido = lineas.slice(1).join(" ").trim();
 
-  comentarioManual.value = ""; // Limpia textarea
-});
+        if (!contenido) return;
 
-</script>
+        const textoNormalizado = normalizarTexto(contenido);
+        if (!contieneHashtagValido(textoNormalizado) || contieneProhibidas(textoNormalizado)) {
+          return;
+        }
+
+        // Evita duplicados
+        if (mostrados.has(textoNormalizado)) return;
+        mostrados.add(textoNormalizado);
+
+        colaMensajes.push({
+          texto: contenido,
+          autor,
+          foto: "https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" // Ícono oficial de FB
+        });
+
+        comentarioManual.value = ""; // Limpia textarea
+      });
+
+    </script>
 
 </body>
+
 </html>
