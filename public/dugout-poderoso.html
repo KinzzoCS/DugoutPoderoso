@@ -88,7 +88,7 @@
           </td>
         </tr>
       </tbody>
-    </table>
+    </table> <br> <br>
 
     <div class="mb-4 w-100">
       <label for="urlInput" class="form-label text-white fw-bold">Pega la URL del directo de YouTube:</label>
@@ -303,7 +303,6 @@ agregarManualBtn.addEventListener("click", () => {
 
   const textoNormalizado = normalizarTexto(contenido);
   if (!contieneHashtagValido(textoNormalizado) || contieneProhibidas(textoNormalizado)) {
-    alert("⚠️ El comentario no contiene hashtag válido o incluye palabras no permitidas.");
     return;
   }
 
