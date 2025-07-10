@@ -99,6 +99,22 @@
   .mensaje-transicion .hashtag-rojo {
     color: #dc3545 !important;
   }
+
+  .comentario-animado {
+  animation: cambioFondo 0.8s forwards;
+}
+
+@keyframes cambioFondo {
+  0% {
+    background-color: #ffffff;
+    color: #1e1e1e;
+  }
+  100% {
+    background-color: #212529;
+    color: #f8f9fa;
+  }
+}
+
   </style>
 </head>
 <body>
@@ -254,27 +270,34 @@
   }
 
   function mostrarSiguiente() {
-    if (colaMensajes.length > 0) {
-      const { texto, autor, foto } = colaMensajes.shift();
-      comentarioEl.innerHTML = `
-        <div class="mensaje-transicion">
-          <div class="contenido-mensaje d-flex align-items-center gap-3">
-            <img src="${foto}" alt="Foto de ${autor}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border: 2px solid #dc3545;">
-            <div>
-              <div class="fw-bold">${resaltarHashtags(texto)}</div>
-              <div class="text-muted small mt-1">– ${autor}</div>
-            </div>
+  comentarioEl.classList.remove("comentario-animado"); // limpia primero
+
+  void comentarioEl.offsetWidth; // "trick" para reiniciar animación
+
+  comentarioEl.classList.add("comentario-animado");
+
+  if (colaMensajes.length > 0) {
+    const { texto, autor, foto } = colaMensajes.shift();
+    comentarioEl.innerHTML = `
+      <div class="mensaje-transicion">
+        <div class="contenido-mensaje d-flex align-items-center gap-3">
+          <img src="${foto}" alt="Foto de ${autor}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border: 2px solid #dc3545;">
+          <div>
+            <div class="fw-bold">${resaltarHashtags(texto)}</div>
+            <div class="text-muted small mt-1">– ${autor}</div>
           </div>
         </div>
-      `;
-    } else {
-      comentarioEl.innerHTML = [
-        '💬  Comenta  <span style="color: #dc3545 !important; font-weight: bold;">#Mineros</span>  o  <span style="color: #dc3545 !important; font-weight: bold;">#LaPoderosa</span>  y  aparece  EN VIVO  🔥',
-        '🎤  ¡Participa ahora!  Escribe  <span style="color: #dc3545 !important; font-weight: bold;">#Mineros</span>  o  <span style="color: #dc3545 !important; font-weight: bold;">#LaPoderosa</span>  🎉  y  sal en pantalla 📺',
-        '⚡️  ¿Listo para brillar?  Comenta  <span style="color: #dc3545 !important; font-weight: bold;">#Mineros</span>  o  <span style="color: #dc3545 !important; font-weight: bold;">#LaPoderosa</span>  y  aparece en vivo 🏟️'
-      ][Math.floor(Math.random() * 3)];
-    }
+      </div>
+    `;
+  } else {
+    comentarioEl.innerHTML = [
+      '💬  Comenta  <span style="color: #dc3545 !important; font-weight: bold;">#Mineros</span>  o  <span style="color: #dc3545 !important; font-weight: bold;">#LaPoderosa</span>  y  aparece  EN VIVO  🔥',
+      '🎤  ¡Participa ahora!  Escribe  <span style="color: #dc3545 !important; font-weight: bold;">#Mineros</span>  o  <span style="color: #dc3545 !important; font-weight: bold;">#LaPoderosa</span>  🎉  y  sal en pantalla 📺',
+      '⚡️  ¿Listo para brillar?  Comenta  <span style="color: #dc3545 !important; font-weight: bold;">#Mineros</span>  o  <span style="color: #dc3545 !important; font-weight: bold;">#LaPoderosa</span>  y  aparece en vivo 🏟️'
+    ][Math.floor(Math.random() * 3)];
   }
+}
+
 
   iniciarBtn.addEventListener('click', async () => {
     const url = urlInput.value.trim();
