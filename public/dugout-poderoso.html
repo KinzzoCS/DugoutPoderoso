@@ -63,6 +63,42 @@
       font-weight: bold;
       padding: 2rem;
     }
+    /* Animaciones */
+
+    .mensaje-transicion {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .mensaje-transicion::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: white;
+    border-radius: 0 50% 50% 0;
+    animation: barrido 0.8s ease forwards;
+    z-index: 1;
+  }
+
+  @keyframes barrido {
+    to {
+      left: 100%;
+    }
+  }
+
+  .mensaje-transicion .contenido-mensaje {
+    position: relative;
+    z-index: 2;
+    color: #1e1e1e;
+    transition: color 0.3s ease;
+  }
+
+  .mensaje-transicion .hashtag-rojo {
+    color: #dc3545 !important;
+  }
   </style>
 </head>
 <body>
@@ -221,20 +257,22 @@
     if (colaMensajes.length > 0) {
       const { texto, autor, foto } = colaMensajes.shift();
       comentarioEl.innerHTML = `
-        <div class="d-flex align-items-center gap-3">
-          <img src="${foto}" alt="Foto de ${autor}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border: 2px solid #dc3545;">
-          <div>
-            <div class="fw-bold">${resaltarHashtags(texto)}</div>
-            <div class="text-white-50 small mt-1">– ${autor}</div>
+        <div class="mensaje-transicion">
+          <div class="contenido-mensaje d-flex align-items-center gap-3">
+            <img src="${foto}" alt="Foto de ${autor}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border: 2px solid #dc3545;">
+            <div>
+              <div class="fw-bold">${resaltarHashtags(texto)}</div>
+              <div class="text-muted small mt-1">– ${autor}</div>
+            </div>
           </div>
         </div>
       `;
     } else {
       comentarioEl.innerHTML = [
-  '💬  Comenta  <span style="color: #dc3545 !important; font-weight: bold;">#Mineros</span>  o  <span style="color: #dc3545 !important; font-weight: bold;">#LaPoderosa</span>  y  aparece  EN VIVO  🔥',
-  '🎤  ¡Participa ahora!  Escribe  <span style="color: #dc3545 !important; font-weight: bold;">#Mineros</span>  o  <span style="color: #dc3545 !important; font-weight: bold;">#LaPoderosa</span>  🎉  y  sal en pantalla 📺',
-  '⚡️  ¿Listo para brillar?  Comenta  <span style="color: #dc3545 !important; font-weight: bold;">#Mineros</span>  o  <span style="color: #dc3545 !important; font-weight: bold;">#LaPoderosa</span>  y  aparece en vivo 🏟️'
-][Math.floor(Math.random() * 3)];
+        '💬  Comenta  <span style="color: #dc3545 !important; font-weight: bold;">#Mineros</span>  o  <span style="color: #dc3545 !important; font-weight: bold;">#LaPoderosa</span>  y  aparece  EN VIVO  🔥',
+        '🎤  ¡Participa ahora!  Escribe  <span style="color: #dc3545 !important; font-weight: bold;">#Mineros</span>  o  <span style="color: #dc3545 !important; font-weight: bold;">#LaPoderosa</span>  🎉  y  sal en pantalla 📺',
+        '⚡️  ¿Listo para brillar?  Comenta  <span style="color: #dc3545 !important; font-weight: bold;">#Mineros</span>  o  <span style="color: #dc3545 !important; font-weight: bold;">#LaPoderosa</span>  y  aparece en vivo 🏟️'
+      ][Math.floor(Math.random() * 3)];
     }
   }
 
