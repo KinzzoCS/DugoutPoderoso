@@ -109,6 +109,8 @@
       Nombre Apellido
       Comentario aquí..."></textarea>
         <button id="agregarManualBtn" class="btn btn-primary mt-2">Agregar manualmente</button>
+        <button id="agregarWhatsappBtn" class="btn btn-success mt-2 ms-2">Agregar WhatsApp</button>
+
       </div>
     </div>
 
@@ -184,77 +186,77 @@
       ];
 
       const mostrados = new Set();
-      let colaMensajes = [];
+  let colaMensajes = [];
 
-      function normalizarTexto(texto) {
-        return texto.toLowerCase()
-          .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-          .replace(/[^\w# ]/g, "");
-      }
+  function normalizarTexto(texto) {
+    return texto.toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^\w# ]/g, "");
+  }
 
-      function contieneHashtagValido(texto) {
-        return hashtagsPermitidos.some(tag => texto.includes(tag.toLowerCase()));
-      }
+  function contieneHashtagValido(texto) {
+    return hashtagsPermitidos.some(tag => texto.includes(tag.toLowerCase()));
+  }
 
-      function contieneProhibidas(texto) {
-        return palabrasProhibidas.some(p => texto.includes(p));
-      }
+  function contieneProhibidas(texto) {
+    return palabrasProhibidas.some(p => texto.includes(p));
+  }
 
-      function resaltarHashtags(texto) {
-        let resultado = texto;
-        hashtagsPermitidos.forEach(tag => {
-          const regex = new RegExp(tag, "gi");
-          resultado = resultado.replace(regex, match => `<span class="hashtag-rojo">${match.toUpperCase()}</span>`);
-        });
-        return resultado;
-      }
+  function resaltarHashtags(texto) {
+    let resultado = texto;
+    hashtagsPermitidos.forEach(tag => {
+      const regex = new RegExp(tag, "gi");
+      resultado = resultado.replace(regex, match => `<span class="hashtag-rojo">${match.toUpperCase()}</span>`);
+    });
+    return resultado;
+  }
 
-      function filtrarMensajes(mensajes) {
-        const nuevos = [];
-        for (const msg of mensajes) {
-          const textoCrudo = msg.message || "";
-          const autor = msg.author || "Anónimo";
-          const foto = msg.authorImage || "";
-          const texto = normalizarTexto(textoCrudo);
-          if (mostrados.has(texto)) continue;
-          if (!contieneHashtagValido(texto)) continue;
-          if (contieneProhibidas(texto)) continue;
-          mostrados.add(texto);
-          nuevos.push({ texto: textoCrudo, autor, foto });
-        }
-        return nuevos;
-      }
+  function filtrarMensajes(mensajes) {
+    const nuevos = [];
+    for (const msg of mensajes) {
+      const textoCrudo = msg.message || "";
+      const autor = msg.author || "Anónimo";
+      const foto = msg.authorImage || "";
+      const texto = normalizarTexto(textoCrudo);
+      if (mostrados.has(texto)) continue;
+      if (!contieneHashtagValido(texto)) continue;
+      if (contieneProhibidas(texto)) continue;
+      mostrados.add(texto);
+      nuevos.push({ texto: textoCrudo, autor, foto });
+    }
+    return nuevos;
+  }
 
-      async function actualizarMensajes() {
-        try {
-          const res = await fetch("/api/mensajes");
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          const data = await res.json();
-          const nuevos = filtrarMensajes(data.mensajes || []);
-          colaMensajes.push(...nuevos);
-        } catch (error) {
-          comentarioEl.classList.remove("estado-activo");
-          comentarioEl.classList.add("estado-espera");
-          comentarioEl.innerHTML = obtenerMensajeEspera();
-        }
-      }
+  async function actualizarMensajes() {
+    try {
+      const res = await fetch("/api/mensajes");
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const nuevos = filtrarMensajes(data.mensajes || []);
+      colaMensajes.push(...nuevos);
+    } catch (error) {
+      comentarioEl.classList.remove("estado-activo");
+      comentarioEl.classList.add("estado-espera");
+      comentarioEl.innerHTML = obtenerMensajeEspera();
+    }
+  }
 
-      function obtenerMensajeEspera() {
-        const mensajes = [
-          '💬  Comenta  <span style="color: #dc3545;">#Mineros</span>  o  <span style="color: #dc3545;">#LaPoderosa</span>  y aparece EN VIVO 🔥',
-          '🎤  ¡Participa ahora! Escribe <span style="color: #dc3545;">#Mineros</span> o <span style="color: #dc3545;">#LaPoderosa</span> 🎉 y sal en pantalla 📺',
-          '⚡️  ¿Listo para brillar? Comenta <span style="color: #dc3545;">#Mineros</span> o <span style="color: #dc3545;">#LaPoderosa</span> y aparece en vivo 🏟️'
-        ];
-        return mensajes[Math.floor(Math.random() * mensajes.length)];
-      }
+  function obtenerMensajeEspera() {
+    const mensajes = [
+      '💬  Comenta  <span style="color: #dc3545;">#Mineros</span>  o  <span style="color: #dc3545;">#LaPoderosa</span>  y aparece EN VIVO 🔥',
+      '🎤  ¡Participa ahora! Escribe <span style="color: #dc3545;">#Mineros</span> o <span style="color: #dc3545;">#LaPoderosa</span> 🎉 y sal en pantalla 📺',
+      '⚡️  ¿Listo para brillar? Comenta <span style="color: #dc3545;">#Mineros</span> o <span style="color: #dc3545;">#LaPoderosa</span> y aparece en vivo 🏟️'
+    ];
+    return mensajes[Math.floor(Math.random() * mensajes.length)];
+  }
 
-      function mostrarSiguiente() {
-        if (colaMensajes.length > 0) {
-          const { texto, autor, foto } = colaMensajes.shift();
-          comentarioEl.classList.remove("estado-espera");
-          comentarioEl.classList.add("estado-activo");
+  function mostrarSiguiente() {
+    if (colaMensajes.length > 0) {
+      const { texto, autor, foto } = colaMensajes.shift();
+      comentarioEl.classList.remove("estado-espera");
+      comentarioEl.classList.add("estado-activo");
 
-          comentarioEl.innerHTML = `
+      comentarioEl.innerHTML = `
         <div class="d-flex align-items-center gap-3">
           <img src="${foto}" alt="Foto de ${autor}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border: 2px solid #dc3545;">
           <div>
@@ -263,83 +265,81 @@
           </div>
         </div>
       `;
-        } else {
-          comentarioEl.classList.remove("estado-activo");
-          comentarioEl.classList.add("estado-espera");
-          comentarioEl.innerHTML = obtenerMensajeEspera();
-        }
+    } else {
+      comentarioEl.classList.remove("estado-activo");
+      comentarioEl.classList.add("estado-espera");
+      comentarioEl.innerHTML = obtenerMensajeEspera();
+    }
+  }
+
+  iniciarBtn.addEventListener('click', async () => {
+    const url = urlInput.value.trim();
+    if (!url) {
+      statusMsg.textContent = "⚠️ Ingresa una URL válida.";
+      return;
+    }
+
+    statusMsg.textContent = "⏳ Iniciando chat...";
+
+    try {
+      const res = await fetch('/api/iniciar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        statusMsg.textContent = `❌ Error: ${data.error || 'No se pudo iniciar'}`;
+        return;
       }
 
-      iniciarBtn.addEventListener('click', async () => {
-        const url = urlInput.value.trim();
-        if (!url) {
-          statusMsg.textContent = "⚠️ Ingresa una URL válida.";
-          return;
-        }
+      statusMsg.textContent = "✅ Chat iniciado correctamente.";
+      mostrados.clear();
+      colaMensajes = [];
+      comentarioEl.classList.remove("estado-activo");
+      comentarioEl.classList.add("estado-espera");
+      comentarioEl.innerHTML = obtenerMensajeEspera();
 
-        statusMsg.textContent = "⏳ Iniciando chat...";
+      actualizarMensajes();
+    } catch (error) {
+      statusMsg.textContent = "❌ Error al iniciar el chat.";
+    }
+  });
 
-        try {
-          const res = await fetch('/api/iniciar', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ url })
-          });
+  setInterval(actualizarMensajes, 60000);
+  setInterval(mostrarSiguiente, 8000);
 
-          const data = await res.json();
-          if (!res.ok) {
-            statusMsg.textContent = `❌ Error: ${data.error || 'No se pudo iniciar'}`;
-            return;
-          }
+  const comentarioManual = document.getElementById("comentarioManual");
+  const agregarManualBtn = document.getElementById("agregarManualBtn");
+  const agregarWhatsappBtn = document.getElementById("agregarWhatsappBtn");
 
-          statusMsg.textContent = "✅ Chat iniciado correctamente.";
-          mostrados.clear();
-          colaMensajes = [];
-          comentarioEl.classList.remove("estado-activo");
-          comentarioEl.classList.add("estado-espera");
-          comentarioEl.innerHTML = obtenerMensajeEspera();
+  function agregarComentarioManual(tipo) {
+    const textoCompleto = comentarioManual.value.trim();
+    if (!textoCompleto) return;
 
-          actualizarMensajes();
-        } catch (error) {
-          statusMsg.textContent = "❌ Error al iniciar el chat.";
-        }
-      });
+    const lineas = textoCompleto.split("\n");
+    const autor = lineas[0]?.trim() || "Anónimo";
+    const contenido = lineas.slice(1).join(" ").trim();
+    if (!contenido) return;
 
-      setInterval(actualizarMensajes, 60000);
-      setInterval(mostrarSiguiente, 8000);
-      const agregarManualBtn = document.getElementById("agregarManualBtn");
-      const comentarioManual = document.getElementById("comentarioManual");
+    const textoNormalizado = normalizarTexto(contenido);
+    if (!contieneHashtagValido(textoNormalizado) || contieneProhibidas(textoNormalizado)) return;
+    if (mostrados.has(textoNormalizado)) return;
 
-      agregarManualBtn.addEventListener("click", () => {
-        const textoCompleto = comentarioManual.value.trim();
+    mostrados.add(textoNormalizado);
 
-        if (!textoCompleto) return;
+    const icono = tipo === 'fb'
+      ? "https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg"
+      : "https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg";
 
-        const lineas = textoCompleto.split("\n");
-        const autor = lineas[0]?.trim() || "Anónimo";
-        const contenido = lineas.slice(1).join(" ").trim();
+    colaMensajes.push({ texto: contenido, autor, foto: icono });
+    comentarioManual.value = "";
+  }
 
-        if (!contenido) return;
-
-        const textoNormalizado = normalizarTexto(contenido);
-        if (!contieneHashtagValido(textoNormalizado) || contieneProhibidas(textoNormalizado)) {
-          return;
-        }
-
-        // Evita duplicados
-        if (mostrados.has(textoNormalizado)) return;
-        mostrados.add(textoNormalizado);
-
-        colaMensajes.push({
-          texto: contenido,
-          autor,
-          foto: "https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" // Ícono oficial de FB
-        });
-
-        comentarioManual.value = ""; // Limpia textarea
-      });
-
-    </script>
+  agregarManualBtn.addEventListener("click", () => agregarComentarioManual('fb'));
+  agregarWhatsappBtn.addEventListener("click", () => agregarComentarioManual('whatsapp'));
+</script>
 
 </body>
 
