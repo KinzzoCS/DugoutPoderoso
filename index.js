@@ -81,3 +81,28 @@ app.get('/api/mensajes', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`🔥 Servidor corriendo en http://localhost:${PORT}`);
 });
+
+const comentariosCronistas = [];
+
+app.post('/api/cronistas', (req, res) => {
+  const comentario = req.body;
+
+  if (!comentario || !comentario.texto) {
+    return res.status(400).json({ error: 'Comentario inválido' });
+  }
+
+  comentariosCronistas.push({
+    texto: comentario.texto,
+    autor: comentario.autor || 'Anónimo',
+    foto: comentario.foto || '',
+    timestamp: Date.now()
+  });
+
+  console.log('[Guardado] Comentario para cronistas:', comentario.texto);
+  res.status(201).json({ ok: true });
+});
+
+app.get('/api/cronistas', (req, res) => {
+  res.json(comentariosCronistas);
+});
+
