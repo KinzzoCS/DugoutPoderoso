@@ -229,7 +229,7 @@ function filtrarMensajes(mensajes) {
 
 async function actualizarMensajes() {
   try {
-    const res = await fetch("/api/cronistas");
+    const res = await fetch("/api/mensajes");
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     const nuevos = filtrarMensajes(data.mensajes || []);
@@ -352,7 +352,7 @@ function agregarComentarioManual(tipo) {
   colaMensajes.push(mensaje);
 
   // También mandarlo a cronistas manualmente
-  
+ 
 
   comentarioManual.value = "";
 }
