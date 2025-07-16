@@ -232,21 +232,9 @@ async function actualizarMensajes() {
   try {
     const res = await fetch("/api/mensajes");
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    
     const data = await res.json();
-    const mensajesOriginales = data.mensajes || [];
-
-    //mandamos todo sin filtrar
-    await fetch("/api/cronistas", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ mensajes: mensajesOriginales }),
-    });
-
-    //filtramos y mostramos en pantalla
-    const nuevos = filtrarMensajes(mensajesOriginales);
+    const nuevos = filtrarMensajes(data.mensajes || []);
     colaMensajes.push(...nuevos);
-
   } catch (error) {
     comentarioEl.classList.remove("estado-activo");
     comentarioEl.classList.add("estado-espera");
