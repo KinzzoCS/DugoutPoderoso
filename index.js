@@ -106,3 +106,15 @@ app.get('/api/cronistas', (req, res) => {
   res.json(comentariosCronistas);
 });
 
+app.delete('/api/cronistas/:timestamp', (req, res) => {
+  const ts = parseInt(req.params.timestamp);
+  if (!ts) return res.status(400).json({ error: 'Timestamp inválido' });
+
+  const index = comentariosCronistas.findIndex(c => c.timestamp === ts);
+  if (index === -1) return res.status(404).json({ error: 'Comentario no encontrado' });
+
+  comentariosCronistas.splice(index, 1);
+  console.log(`[Eliminado] Comentario con timestamp ${ts}`);
+  res.json({ ok: true });
+});
+

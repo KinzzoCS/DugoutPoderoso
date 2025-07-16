@@ -232,6 +232,15 @@ async function actualizarMensajes() {
     const res = await fetch("/api/mensajes");
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
+
+    if (data.mensajes && data.mensajes.length > 0) {
+      await fetch('/api/cronistas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data.mensajes),
+      });
+    }
+    
     const nuevos = filtrarMensajes(data.mensajes || []);
     colaMensajes.push(...nuevos);
   } catch (error) {

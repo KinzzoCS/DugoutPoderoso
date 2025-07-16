@@ -2,75 +2,114 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Centro de Mensajes - Dugout Cronistas</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Centro de Mensajes - Dugout</title>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
-    <style>
-      body {
-        background-color: #1e1e1e;
-        color: #eee;
-      }
-      .list-group-item {
-        background-color: #2c2c2c;
-        color: #fff;
-        border: none;
-        margin-bottom: 5px;
-        border-radius: 5px;
-        font-family: monospace;
-        font-size: 0.9rem;
-      }
-    </style>
   </head>
-  <body>
+  <body class="bg-light">
     <div class="container py-4">
-      <h1 class="text-center mb-4">Centro de Mensajes - Dugout Cronistas</h1>
+      <h1 class="text-center mb-4">Centro de Mensajes</h1>
 
-      <div
-        id="mensajes"
-        class="list-group mb-4"
-        style="max-height: 70vh; overflow-y: auto"
-      ></div>
+      <div class="mb-3">
+        <label for="urlInput" class="form-label"
+          >URL del directo de YouTube</label
+        >
+        <input
+          type="text"
+          class="form-control"
+          id="urlInput"
+          placeholder="Pega aquí la URL del directo"
+        />
+        <button class="btn btn-primary mt-2" id="iniciarBtn">Iniciar</button>
+      </div>
 
-      <div class="text-center">
-        <button class="btn btn-success" onclick="cargarMensajes()">
+      <div id="mensajes" class="list-group"></div>
+
+      <div class="text-center mt-4">
+        <button class="btn btn-success" id="actualizarBtn">
           🔄 Actualizar comentarios
         </button>
       </div>
     </div>
 
     <script>
+      const cont = document.getElementById("mensajes");
+      const actualizarBtn = document.getElementById("actualizarBtn");
+      const iniciarBtn = document.getElementById("iniciarBtn");
+      const urlInput = document.getElementById("urlInput");
+
+      iniciarBtn.addEventListener("click", async () => {
+        const url = urlInput.value.trim();
+        if (!url) {
+          alert("Por favor, pega la URL del directo de YouTube.");
+          return;
+        }
+
+        const res = await fetch("/api/iniciar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url }),
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          cargarMensajes();
+        } else {
+          alert(data.error || "Error al iniciar el chat.");
+        }
+      });
+
       async function cargarMensajes() {
         try {
           const res = await fetch("/api/cronistas");
           if (!res.ok) throw new Error("Error en la respuesta");
 
           const data = await res.json();
-          const cont = document.getElementById("mensajes");
           cont.innerHTML = "";
 
           data.forEach((msg) => {
             const div = document.createElement("div");
-            div.className = "list-group-item";
+            div.className = "list-group-item d-flex align-items-center gap-3";
 
-            const hora = new Date(msg.timestamp).toLocaleTimeString();
-            div.innerHTML = `<strong>[${hora}] ${msg.autor}:</strong> ${msg.texto}`;
+            div.innerHTML = `
+            <img src="${
+              msg.foto || "https://via.placeholder.com/60"
+            }" alt="Foto de ${msg.autor}" 
+                 style="width:60px; height:60px; border-radius:50%; object-fit:cover; border:1px solid #dc3545;">
+            <div class="flex-grow-1">
+              <div><strong>${msg.autor}</strong></div>
+              <div>${msg.texto}</div>
+            </div>
+            <button class="btn btn-sm btn-outline-danger">Leído</button>
+          `;
+
+            const btn = div.querySelector("button");
+            btn.addEventListener("click", async () => {
+              try {
+                const delRes = await fetch(`/api/cronistas/${msg.timestamp}`, {
+                  method: "DELETE",
+                });
+                if (!delRes.ok) throw new Error("No se pudo borrar");
+
+                cont.removeChild(div);
+              } catch (e) {
+                alert("Error al borrar comentario");
+              }
+            });
+
             cont.appendChild(div);
           });
-
-          // Scroll automático al último comentario
-          cont.scrollTop = cont.scrollHeight;
         } catch (error) {
           console.error("Error al cargar mensajes:", error);
         }
       }
 
-      // Actualiza automáticamente cada 10 segundos
-      setInterval(cargarMensajes, 10000);
+      actualizarBtn.addEventListener("click", cargarMensajes);
 
-      // Carga inicial al abrir la página
+      // Carga inicial automática
       cargarMensajes();
     </script>
   </body>
