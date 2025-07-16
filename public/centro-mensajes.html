@@ -66,26 +66,28 @@
           if (!res.ok) throw new Error("Error en la respuesta");
 
           const data = await res.json();
+          let nuevos = 0;
 
           for (const msg of data) {
             const clave = `${msg.autor}-${msg.texto}`;
             if (mostrados.has(clave)) continue;
             mostrados.add(clave);
+            nuevos++; // Contador de nuevos
 
             const div = document.createElement("div");
             div.className =
               "card p-3 card-mensaje d-flex flex-row gap-3 align-items-center";
 
             div.innerHTML = `
-              <img src="${msg.foto || "https://via.placeholder.com/60"}"
-                   alt="Foto de ${msg.autor}"
-                   style="width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid #dc3545;">
-              <div class="flex-grow-1">
-                <div><strong>${msg.autor}</strong></div>
-                <div>${msg.texto}</div>
-              </div>
-              <button class="btn btn-leido btn-sm">Leído</button>
-            `;
+        <img src="${msg.foto || "https://via.placeholder.com/60"}"
+             alt="Foto de ${msg.autor}"
+             style="width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid #dc3545;">
+        <div class="flex-grow-1">
+          <div><strong>${msg.autor}</strong></div>
+          <div>${msg.texto}</div>
+        </div>
+        <button class="btn btn-leido btn-sm">Leído</button>
+      `;
 
             const btn = div.querySelector("button");
             btn.addEventListener("click", async () => {
@@ -103,6 +105,11 @@
             });
 
             cont.prepend(div); // mensajes nuevos arriba
+          }
+
+          // 🌀 Vibración si hubo nuevos mensajes
+          if (nuevos > 0 && navigator.vibrate) {
+            navigator.vibrate([100, 50, 100]);
           }
         } catch (error) {
           console.error("Error al cargar mensajes:", error);
