@@ -352,7 +352,7 @@ function agregarComentarioManual(tipo) {
   colaMensajes.push(mensaje);
 
   // También mandarlo a cronistas manualmente
- 
+  enviarAMensajesCronistas(mensaje);
 
   comentarioManual.value = "";
 }
