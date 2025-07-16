@@ -229,7 +229,7 @@ function filtrarMensajes(mensajes) {
 
 async function actualizarMensajes() {
   try {
-    const res = await fetch("/api/mensajes");
+    const res = await fetch("/api/cronistas");
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     const nuevos = filtrarMensajes(data.mensajes || []);
