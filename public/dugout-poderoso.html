@@ -92,7 +92,7 @@
           </td>
         </tr>
       </tbody>
-    </table> <br> <br> <br> <br>
+    </table> <br> <br>
 
     <div class="mb-4 w-100">
       <label for="urlInput" class="form-label text-white fw-bold">Pega la URL del directo de YouTube:</label>
@@ -195,10 +195,7 @@ function normalizarTexto(texto) {
 }
 
 function contieneHashtagValido(texto) {
-  return hashtagsPermitidos.some(tag => {
-    const regex = new RegExp(`\\b${tag}\\b`, 'i');
-    return regex.test(texto);
-  });
+  return hashtagsPermitidos.some(tag => texto.includes(tag.toLowerCase()));
 }
 
 function contieneProhibidas(texto) {
@@ -215,23 +212,16 @@ function resaltarHashtags(texto) {
 }
 
 function filtrarMensajes(mensajes) {
+
   const nuevos = [];
   for (const msg of mensajes) {
     const textoCrudo = msg.message || "";
     const autor = msg.author || "Anónimo";
     const foto = msg.authorImage || "";
     const texto = normalizarTexto(textoCrudo);
-
-    // Verifica si el mensaje ya fue mostrado
     if (mostrados.has(texto)) continue;
-
-    // Verifica si el mensaje contiene un hashtag válido
     if (!contieneHashtagValido(texto)) continue;
-
-    // Verifica si el mensaje contiene palabras prohibidas
     if (contieneProhibidas(texto)) continue;
-
-    // Agrega el texto a los mostrados y al nuevo array
     mostrados.add(texto);
     nuevos.push({ texto: textoCrudo, autor, foto });
   }
@@ -242,9 +232,22 @@ async function actualizarMensajes() {
   try {
     const res = await fetch("/api/mensajes");
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    
     const data = await res.json();
+    const mensajesOriginales = data.mensajes || [];
+
+    //mandamos todo sin filtrar
+    await fetch("/api/cronistas", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mensajes: mensajesOriginales }),
+    });
+
+    //filtramos y mostramos en pantalla
+    const nuevos = filtrarMensajes(mensajesOriginales);
     const nuevos = filtrarMensajes(data.mensajes || []);
     colaMensajes.push(...nuevos);
+
   } catch (error) {
     comentarioEl.classList.remove("estado-activo");
     comentarioEl.classList.add("estado-espera");
@@ -261,16 +264,21 @@ function obtenerMensajeEspera() {
   return mensajes[Math.floor(Math.random() * mensajes.length)];
 }
 
+async function enviarAMensajesCronistas(mensaje) {
+  try {
+    await fetch('/api/cronistas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(mensaje)
+    });
+  } catch (error) {
+    console.warn("No se pudo enviar el mensaje a cronistas:", error);
+  }
+}
+
 function mostrarSiguiente() {
-  while (colaMensajes.length > 0) {
+  if (colaMensajes.length > 0) {
     const { texto, autor, foto } = colaMensajes.shift();
-
-    // Verifica si el mensaje contiene un hashtag válido
-    if (!contieneHashtagValido(texto)) continue;
-
-    // Verifica si el mensaje contiene palabras prohibidas
-    if (contieneProhibidas(texto)) continue;
-
     comentarioEl.classList.remove("estado-espera");
     comentarioEl.classList.add("estado-activo");
 
@@ -284,16 +292,13 @@ function mostrarSiguiente() {
       </div>
     `;
 
-    // Enviar a cronistas solo si pasa el filtro
+    // Enviar el mensaje mostrado a los cronistas
     enviarAMensajesCronistas({ texto, autor, foto });
-
-    return; // Rompe el bucle: ya se mostró uno válido
+  } else {
+    comentarioEl.classList.remove("estado-activo");
+    comentarioEl.classList.add("estado-espera");
+    comentarioEl.innerHTML = obtenerMensajeEspera();
   }
-
-  // Si la cola está vacía o no hay mensajes válidos
-  comentarioEl.classList.remove("estado-activo");
-  comentarioEl.classList.add("estado-espera");
-  comentarioEl.innerHTML = obtenerMensajeEspera();
 }
 
 iniciarBtn.addEventListener('click', async () => {
@@ -360,20 +365,14 @@ function agregarComentarioManual(tipo) {
   const mensaje = { texto: contenido, autor, foto: icono };
   colaMensajes.push(mensaje);
 
-  // También mandarlo a cronistas manualmente solo si pasa el filtro
-  if (contieneHashtagValido(textoNormalizado) && !contieneProhibidas(textoNormalizado)) {
-    enviarAMensajesCronistas(mensaje);
-  }
+  // También mandarlo a cronistas manualmente
+  enviarAMensajesCronistas(mensaje);
 
   comentarioManual.value = "";
 }
 
 agregarManualBtn.addEventListener("click", () => agregarComentarioManual('fb'));
 agregarWhatsappBtn.addEventListener("click", () => agregarComentarioManual('whatsapp'));
-
-
 </script>
 
 </body>
-
-</html>
