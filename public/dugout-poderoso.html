@@ -267,8 +267,10 @@ async function enviarAMensajesCronistas(mensaje) {
 }
 
 function mostrarSiguiente() {
-  if (colaMensajes.length > 0) {
+  while (colaMensajes.length > 0) {
     const { texto, autor, foto } = colaMensajes.shift();
+    if (!contieneHashtagValido(texto)) continue;
+
     comentarioEl.classList.remove("estado-espera");
     comentarioEl.classList.add("estado-activo");
 
@@ -282,14 +284,18 @@ function mostrarSiguiente() {
       </div>
     `;
 
-    // Enviar el mensaje mostrado a los cronistas
+    // Enviar a cronistas solo si pasa el filtro
     enviarAMensajesCronistas({ texto, autor, foto });
-  } else {
-    comentarioEl.classList.remove("estado-activo");
-    comentarioEl.classList.add("estado-espera");
-    comentarioEl.innerHTML = obtenerMensajeEspera();
+
+    return; // Rompe el bucle: ya se mostró uno válido
   }
+
+  // Si la cola está vacía o no hay mensajes válidos
+  comentarioEl.classList.remove("estado-activo");
+  comentarioEl.classList.add("estado-espera");
+  comentarioEl.innerHTML = obtenerMensajeEspera();
 }
+
 
 iniciarBtn.addEventListener('click', async () => {
   const url = urlInput.value.trim();
