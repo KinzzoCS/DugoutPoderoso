@@ -195,7 +195,10 @@ function normalizarTexto(texto) {
 }
 
 function contieneHashtagValido(texto) {
-  return hashtagsPermitidos.some(tag => texto.includes(tag.toLowerCase()));
+  return hashtagsPermitidos.some(tag => {
+    const regex = new RegExp(`\\b${tag.toLowerCase()}\\b`, 'i');
+    return regex.test(texto);
+  });
 }
 
 function contieneProhibidas(texto) {
