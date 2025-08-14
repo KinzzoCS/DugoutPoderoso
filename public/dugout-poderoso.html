@@ -92,12 +92,13 @@
           </td>
         </tr>
       </tbody>
-    </table> <br> <br>
+    </table> <br> <br> <br>
 
     <div class="mb-4 w-100">
-      <label for="urlInput" class="form-label text-white fw-bold">Pega la URL del directo de YouTube:</label>
+      <label for="urlInput" class="form-label text-white fw-bold">Pega la URL de los directos de YouTube y Facebook:</label>
       <div class="input-group">
         <input type="url" class="form-control" id="urlInput" placeholder="https://www.youtube.com/watch?v=..." />
+        <input type="url" class="form-control" id="urlInput" placeholder="https://www.facebook.com/watch/?ref=..." />
         <button id="iniciarBtn" class="btn btn-danger">Iniciar Chat</button>
       </div>
       <div id="statusMsg" class="mt-2 text-white"></div>
@@ -108,7 +109,7 @@
         <textarea id="comentarioManual" class="form-control" rows="3" placeholder="Ejemplo:
       Nombre Apellido
       Comentario aquí..."></textarea>
-        <button id="agregarManualBtn" class="btn btn-primary mt-2">Agregar manualmente</button>
+        <button id="agregarManualBtn" class="btn btn-primary mt-2">Agregar Facebook</button>
         <button id="agregarWhatsappBtn" class="btn btn-success mt-2 ms-2">Agregar WhatsApp</button>
 
       </div>
@@ -121,7 +122,9 @@
       const iniciarBtn = document.getElementById('iniciarBtn');
       const statusMsg = document.getElementById('statusMsg');
 
-      const hashtagsPermitidos = ["#mineros", "#lapoderosa", "#Mineros", "#LaPoderosa", "#LAPODEROSA", "#MINEROS", "#MICRONISTAFAVORITO", "#DEPORTESLAPODEROSA", "#DeportesLaPoderosa", "deproteslapoderosa"];
+      const hashtagsPermitidos = ["#mineros", "#lapoderosa", "#Mineros", "#LaPoderosa", "#LAPODEROSA", "#MINEROS", "#MICRONISTAFAVORITO", 
+        "#DEPORTESLAPODEROSA", "#DeportesLaPoderosa", "deproteslapoderosa"];
+
       const palabrasProhibidas = [
         // Insultos clásicos y variantes censuradas
         "pendejo", "p3ndej@", "p3nd3jo", "pendej0", "p e n d e j o", "p3ndejo",
